@@ -16,6 +16,7 @@
       <string>de.zeezide.dt.unit.spm.modules.CryptoSwift</string>
       <string>de.zeezide.dt.unit.spm.modules.PromiseKit</string>
       <string>de.zeezide.dt.unit.spm.modules.Regex</string>
+      <string>de.zeezide.dt.unit.spm.modules.Siesta</string>
     </array>
 
     <key>Concrete</key>

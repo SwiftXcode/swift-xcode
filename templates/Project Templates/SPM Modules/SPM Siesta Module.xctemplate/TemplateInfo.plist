@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.Siesta</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <dict>
+        <key>Identifier</key>   <string>zzSPMSiesta</string>
+        <key>Name</key>
+        <string>Use the Siesta module.</string>
+        <key>Description</key>
+        <string>Write your REST API clients in a civilized way.</string>
+        
+        <key>SortOrder</key>    <integer>20</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:Siesta(url: "https://github.com/bustoutsolutions/siesta", from: "1.3.1")</string>
+                <string>Package.swift:spmpackagedecl:targets:default:Siesta</string>
+              </array>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>
