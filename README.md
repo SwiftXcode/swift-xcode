@@ -5,7 +5,7 @@
 
 ![Swift4](https://img.shields.io/badge/swift-4-blue.svg)
 ![macOS](https://img.shields.io/badge/os-macOS-green.svg?style=flat)
-[![homebrew](https://img.shields.io/homebrew/v/cake.svg)](https://github.com/SwiftXcode/homebrew-swiftxcode)
+![homebrew](https://img.shields.io/homebrew/v/cake.svg)](https://github.com/SwiftXcode/homebrew-swiftxcode)
 
 TODO
 
