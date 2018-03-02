@@ -39,6 +39,8 @@ lint-templates :
 	$(XML_LINTER) $(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ CryptoSwift\ Module.xctemplate/TemplateInfo.plist
 	$(XML_LINTER) $(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ PromiseKit\ Module.xctemplate/TemplateInfo.plist
 	$(XML_LINTER) $(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Regex\ Module.xctemplate/TemplateInfo.plist
+	$(XML_LINTER) $(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Siesta\ Module.xctemplate/TemplateInfo.plist
+	$(XML_LINTER) $(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Moya\ Module.xctemplate/TemplateInfo.plist
 	$(XML_LINTER) $(PROJECT_BASE_TEMPLATES_DIR)/Swift\ iOS\ Base.xctemplate/TemplateInfo.plist
 	$(XML_LINTER) $(PROJECT_BASE_TEMPLATES_DIR)/SPM\ iOS\ Base.xctemplate/TemplateInfo.plist
 	$(XML_LINTER) $(PROJECT_BASE_TEMPLATES_DIR)/SPM\ Tool\ Base.xctemplate/TemplateInfo.plist
@@ -67,7 +69,9 @@ install-project-modules-templates : uninstall-project-modules-templates
 		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ UXKit\ Module.xctemplate		\
 		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ CryptoSwift\ Module.xctemplate	\
 		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ PromiseKit\ Module.xctemplate	\
-		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Regex\ Module.xctemplate	\
+		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Regex\ Module.xctemplate		\
+		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Siesta\ Module.xctemplate		\
+		$(PROJECT_MODULES_TEMPLATES_DIR)/SPM\ Moya\ Module.xctemplate		\
 		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/
 
 uninstall-project-modules-templates :
@@ -76,7 +80,9 @@ uninstall-project-modules-templates :
 		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ UXKit\ Module.xctemplate	\
 		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ CryptoSwift\ Module.xctemplate\
 		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ PromiseKit\ Module.xctemplate	\
-		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ Regex\ Module.xctemplate
+		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ Regex\ Module.xctemplate	\
+		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ Siesta\ Module.xctemplate	\
+		$(XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR)/SPM\ Moya\ Module.xctemplate
 
 
 install-project-app-templates : uninstall-project-app-templates
