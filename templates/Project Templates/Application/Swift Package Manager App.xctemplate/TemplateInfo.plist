@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spmCocoaTouchApplication</string>
+
+    <key>Ancestors</key>
+    <array>
+      <string>de.zeezide.dt.unit.spmCocoaTouchApplicationBase</string>
+      <string>de.zeezide.dt.unit.spm.modules.cows</string>
+      <string>de.zeezide.dt.unit.spm.modules.UXKit</string>
+      <string>de.zeezide.dt.unit.spm.modules.CryptoSwift</string>
+      <string>de.zeezide.dt.unit.spm.modules.PromiseKit</string>
+      <string>de.zeezide.dt.unit.spm.modules.Regex</string>
+    </array>
+
+    <key>Concrete</key>
+    <true/>
+
+    <key>Description</key>
+    <string>This template provides a starting point for an application that uses the Swift Package Manager. Besides that, it behaves like a Single View Cocoa Touch Application.</string>
+
+    
+    <!-- TARGETS -->
+
+    <key>Targets</key>
+    <array>
+      <dict>
+        <key>TargetIdentifier</key>
+        <string>com.apple.dt.cocoaTouchApplicationTarget</string>
+        
+        <key>ProductType</key>
+        <string>com.apple.product-type.application</string>
+        
+        <!-- Note: CONFIGURATION is really lower, but on icase FS it doesn't matter ... -->
+        <key>SharedSettings</key>
+        <dict>
+          <key>ASSETCATALOG_COMPILER_APPICON_NAME</key><string>AppIcon</string>
+          <key>TARGETED_DEVICE_FAMILY</key>            <string>1,2</string>
+          
+          <key>LD_RUNPATH_SEARCH_PATHS</key>
+          <string>$(inherited) @executable_path/Frameworks</string>
+          
+          <!-- TBD: do we need inherited here? not sure. I would think they merge -->
+          <key>HEADER_SEARCH_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(CURRENT_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>SWIFT_INCLUDE_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/$(CURRENT_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>LIBRARY_SEARCH_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(CURRENT_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>OTHER_LDFLAGS</key>
+          <array>
+            <string>$(inherited) -lXcodeSPMDependencies</string>
+          </array>
+        </dict>
+      
+        <key>BuildPhases</key>
+        <array>
+          <!-- process SPM dependencies -->
+          <dict>
+            <key>SortOrder</key>    <integer>0</integer>
+            <key>Name</key>
+            <string>Build Swift Package Manager Dependencies</string>
+            <key>Class</key>      <string>ShellScript</string>
+            <key>ShellPath</key>  <string>/bin/sh</string>
+            <key>ShellScript</key><string>swift xcode build</string>
+          </dict>
+          
+          <dict><key>Class</key><string>Sources</string>   </dict>
+          <dict><key>Class</key><string>Frameworks</string></dict>
+          <dict><key>Class</key><string>Resources</string> </dict>
+        </array>
+      </dict>
+    </array>
+    
+    <key>Nodes</key>
+    <array>      
+      <!-- Storyboard -->
+      <string>Info.plist:UIMainStoryboardFile</string>
+      <string>Base.lproj/Main.storyboard</string>
+      
+      <!-- Single View -->
+      <string>ViewController.swift:comments</string>
+      <string>ViewController.swift:imports:importCocoa</string>
+      <string>ViewController.swift:implementation(___FILEBASENAME___: UIViewController)</string>
+      <string>ViewController.swift:implementation:methods:viewDidLoad(override func viewDidLoad(\))</string>
+      <string>ViewController.swift:implementation:methods:viewDidLoad:super</string>
+      <string>ViewController.swift:implementation:methods:didReceiveMemoryWarning(override func didReceiveMemoryWarning(\))</string>
+      <string>ViewController.swift:implementation:methods:didReceiveMemoryWarning:super</string>
+    </array>
+    
+    <key>Definitions</key>
+    <dict>
+      <!-- Storyboard -->
+      <key>Info.plist:UIMainStoryboardFile</key>
+      <string><![CDATA[<key>UIMainStoryboardFile</key><string>Main</string>]]></string>
+      <key>*:implementation:methods:awakeFromNib:super</key>
+      <string>super.awakeFromNib()</string>
+      
+      <!-- Single View -->
+      <key>Base.lproj/Main.storyboard</key>
+      <dict>
+        <key>Path</key>     <string>Main.storyboard</string>
+        <key>SortOrder</key><integer>99</integer>
+      </dict>
+    </dict>
+  </dict>
+</plist>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.UXKit</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <dict>
+        <key>Identifier</key>   <string>zzSPMUXKit</string>
+        <key>Name</key>
+        <string>Use the UXKit module.</string>
+        <key>Description</key>
+        <string>Add the "UXKit" module as a Swift Package Manager dependency. UXKit helps you develop applications for iOS and macOS from a single codebase.</string>
+        
+        <key>SortOrder</key>    <integer>11</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:UXKit(url: "https://github.com/ZeeZide/UXKit", from: "0.0.2")</string>
+                <string>Package.swift:spmpackagedecl:targets:default:UXKit</string>
+                <string>AppDelegate.swift:imports:import:zzSPMUXKit</string>
+                <string>ViewController.swift:imports:import:zzSPMUXKit</string>
+              </array>
+              <key>Definitions</key>
+              <dict>
+                <key>AppDelegate.swift:imports:import:zzSPMUXKit</key>
+                <string>import UXKit</string>
+                <key>ViewController.swift:imports:import:zzSPMUXKit</key>
+                <string>import UXKit</string>
+              </dict>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>

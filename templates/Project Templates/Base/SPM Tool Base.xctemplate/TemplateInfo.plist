@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spmToolBase</string>
+
+    <key>Ancestors</key>
+    <array>
+      <string>com.apple.dt.unit.base</string>
+      <string>com.apple.dt.unit.osxBase</string>
+      <string>com.apple.dt.unit.base_DefinitionsLanguage</string>
+      <!-- do not import package options here! -->      
+    </array>
+
+    <key>Concrete</key>
+    <false/>
+
+
+    <key>Targets</key>
+    <array>
+      <dict>
+        <key>ProductType</key>
+        <string>com.apple.product-type.tool</string>
+        <key>TargetIdentifier</key>
+        <string>com.apple.dt.commandLineToolTarget</string>
+        
+        <!-- Note: CONFIGURATION is really lower, but on icase FS it doesn't matter ... -->
+        <key>SharedSettings</key>
+        <dict>
+          <key>HEADER_SEARCH_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>SWIFT_INCLUDE_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>LIBRARY_SEARCH_PATHS</key>
+          <array>
+            <string>$(SRCROOT)/$(PRODUCT_NAME)/.buildzz/.build/Xcode/$(PLATFORM_PREFERRED_ARCH)-apple-$(SWIFT_PLATFORM_TARGET_PREFIX)$($(DEPLOYMENT_TARGET_SETTING_NAME))/$(CONFIGURATION)</string>
+          </array>
+          
+          <key>OTHER_LDFLAGS</key>
+          <array>
+            <string>-lXcodeSPMDependencies</string>
+          </array>
+          
+          <key>SWIFT_VERSION</key>
+          <string>___DEFAULTTOOLCHAINSWIFTVERSION___</string>
+        </dict>
+        
+        <!-- Do not add build phases here, otherwise we can't change them
+             in consuming templates! -->
+      </dict>
+    </array>
+    
+    
+    <key>Nodes</key>
+    <array>
+      <string>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:comments</string>
+      <string>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:imports:import:Foundation</string>
+
+      <string>Package.swift:header</string>
+      <string>Package.swift:spmpackagedecl</string>
+      <string>Package.swift:spmpackagedecl:deps</string>
+      <string>Package.swift:spmpackagedecl:targets</string>
+      <string>Package.swift:spmpackagedecl:targets:default</string>
+    </array>
+    
+    
+    <!-- ***************************************************** -->
+    <!-- TODO: indent, separate out common stuff -->
+    <key>Definitions</key>
+    <dict>
+      <!-- non-lang Swift Stuff (move rules to own template) -->
+  		<key>*:imports:import:*</key>
+  		<string>import ___*___</string>
+      
+      <!-- Package Swift (move rules to own template) -->
+      
+      <key>Package.swift</key>
+      <dict>
+        <key>SortOrder</key><integer>1</integer>
+        <key>TargetIdentifiers</key><array/>
+      </dict>
+      <key>Package.swift:header</key>
+      <string>// swift-tools-version:4.0
+//___FILEHEADER___
+import PackageDescription
+</string>
+      <key>*:spmpackagedecl</key>
+      <dict>
+        <key>Beginning</key>
+        <string>let package = Package(
+    name: "___PACKAGENAMEASIDENTIFIER___",
+</string>
+        <key>End</key>
+        <string>)</string>
+      </dict>
+                
+      <key>*:spmpackagedecl:deps</key>
+      <dict>
+        <key>Beginning</key>
+        <string>    dependencies: [
+        /* Add your package dependencies in here
+        .package(url: "https://github.com/AlwaysRightInstitute/cows.git",
+                 from: "1.0.0"),
+        */</string>
+        <key>End</key>
+        <string>    ],
+</string>
+      </dict>
+                
+      <key>*:spmpackagedecl:targets</key>
+      <dict>
+        <key>Beginning</key><string>    targets: [</string>
+        <key>End</key>   		<string>    ]</string>
+      </dict>
+
+      <key>*:spmpackagedecl:targets:default</key>
+      <dict>
+        <key>Beginning</key>
+        <string>        .target(name: "___PACKAGENAMEASIDENTIFIER___", 
+                dependencies: [
+                  /* Add your target dependencies in here, e.g.: */
+                  // "cows",</string>
+        <key>End</key>
+        <string>        ])</string>
+      </dict>
+                
+      <key>Package.swift:spmpackagedecl:deps:*</key>
+      <string>        .package(___*___),</string>
+      <key>Package.swift:spmpackagedecl:targets:default:*</key>
+      <string>                  "___*___",</string>
+      
+      
+      <!-- Tool stuff -->
+      
+      <key>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift</key>
+      <dict>
+        <key>Path</key><string>Sources/main.swift</string>
+      </dict>      
+      
+      <key>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:body:helloworld</key>
+      <string>print("Hello Swifty World!")</string>
+    </dict>
+  </dict>
+</plist>

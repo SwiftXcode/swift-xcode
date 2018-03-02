@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.swift.cocoaTouchApplicationBase</string>
+
+    <key>Ancestors</key>
+    <array>
+      <string>com.apple.dt.unit.bundleBase</string>
+    </array>
+    
+    <key>Concrete</key>
+    <false/>
+        
+    <!-- iOS Base -->
+
+    <key>Platforms</key>
+    <array>
+      <string>com.apple.platform.iphoneos</string>
+    </array>
+    
+    <key>Project</key>
+    <dict>
+      <key>SDK</key><string>iphoneos</string>
+      
+      <key>SharedSettings</key>
+      <dict>
+        <key>IPHONEOS_DEPLOYMENT_TARGET</key><string>latest_iphoneos</string>
+        <key>CODE_SIGN_IDENTITY</key>        <string>iPhone Developer</string>
+        
+        <key>SWIFT_VERSION</key>
+        <string>___DEFAULTTOOLCHAINSWIFTVERSION___</string>
+      </dict>
+      <key>Configurations</key>
+      <dict>
+        <key>Release</key>
+        <dict><key>VALIDATE_PRODUCT</key><string>YES</string></dict>
+      </dict>
+    </dict>
+    
+    
+    <!-- Nodes -->
+    
+    <key>Nodes</key>
+    <array>
+      <!-- App Base -->
+      <string>Info.plist:PackageType</string>
+      
+      <!-- Touch Base -->
+      <string>Info.plist:iPhone</string>
+      <string>Info.plist:UIRequiredDeviceCapabilities:base</string>
+      <string>Info.plist:LaunchScreen</string>
+      <string>Info.plist:UISupportedInterfaceOrientations~iPhone</string>
+      <string>Info.plist:UISupportedInterfaceOrientations~iPad</string>
+      <string>Assets.xcassets</string>
+      <string>Base.lproj/LaunchScreen.storyboard</string>
+      
+      <string>AppDelegate.swift:comments</string>
+      <string>AppDelegate.swift:imports:importCocoa</string>
+      <string>AppDelegate.swift:UIApplicationMain</string>
+      <string>AppDelegate.swift:implementation(AppDelegate: UIResponder, UIApplicationDelegate)</string>
+      <string>AppDelegate.swift:implementation:properties:window</string>
+      <string>AppDelegate.swift:implementation:methods:applicationdidFinishLaunchingWithOptions(func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?\) -&gt; Bool)</string>
+      <string>AppDelegate.swift:implementation:methods:applicationdidFinishLaunchingWithOptions:body</string>
+      <string>AppDelegate.swift:implementation:methods:applicationdidFinishLaunchingWithOptions:return</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillResignActive(func applicationWillResignActive(_ application: UIApplication\))</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillResignActive:comments</string>
+      <string>AppDelegate.swift:implementation:methods:applicationDidEnterBackground(func applicationDidEnterBackground(_ application: UIApplication\))</string>
+      <string>AppDelegate.swift:implementation:methods:applicationDidEnterBackground:comments</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillEnterForeground(func applicationWillEnterForeground(_ application: UIApplication\))</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillEnterForeground:comments</string>
+      <string>AppDelegate.swift:implementation:methods:applicationDidBecomeActive(func applicationDidBecomeActive(_ application: UIApplication\))</string>
+      <string>AppDelegate.swift:implementation:methods:applicationDidBecomeActive:comments</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillTerminate(func applicationWillTerminate(_ application: UIApplication\))</string>
+      <string>AppDelegate.swift:implementation:methods:applicationWillTerminate:comments</string>
+    </array>
+    
+    
+    <!-- Definitions -->
+
+    <key>Definitions</key>
+    <dict>
+      <!-- Base Definitions Language -->
+			<key>*:imports:importHeader:*</key>	  <string/>
+			<key>*:imports:importFramework:*</key><string>import ___*___</string>
+			<key>*:class:*</key>                  <string/>
+			<key>*:implementation</key>
+			<dict>
+				<key>Beginning</key>
+				<string>class ___*___ {
+</string>
+				<key>End</key>
+				<string>
+}
+</string>
+				<key>Indent</key><integer>1</integer>
+			</dict>
+			<key>*:implementation:methods:init</key>
+			<dict>
+				<key>Beginning</key>
+				<string>override init() {
+super.init()
+</string>
+				<key>End</key>
+				<string>}
+
+</string>
+				<key>Indent</key><integer>1</integer>
+			</dict>
+      
+      <!-- iOS defs -->
+      <key>Info.plist:UISupportedInterfaceOrientations~iPhone</key>
+      <string><![CDATA[<key>UISupportedInterfaceOrientations</key>
+<array>
+     <string>UIInterfaceOrientationPortrait</string>
+     <string>UIInterfaceOrientationLandscapeLeft</string>
+     <string>UIInterfaceOrientationLandscapeRight</string>
+</array>
+]]></string>
+        <key>Info.plist:UISupportedInterfaceOrientations~iPad</key>
+        <string><![CDATA[<key>UISupportedInterfaceOrientations~ipad</key>
+<array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+</array>
+]]></string>
+      <key>*:imports:importCocoa</key><string>import UIKit</string>
+      
+      <key>*:implementation:viewDidLoad</key>
+      <dict>
+        <key>Beginning</key>
+        <string>override func viewDidLoad() {
+super.viewDidLoad()
+// Do any additional setup after loading the view, typically from a nib.</string>
+        <key>End</key>
+        <string>}
+</string>
+        <key>Indent</key><integer>1</integer>
+      </dict>
+      
+      <key>*:implementation:didReceiveMemoryWarning</key>
+      <dict>
+        <key>Beginning</key>
+        <string>override func didReceiveMemoryWarning() {
+super.didReceiveMemoryWarning()
+// Dispose of any resources that can be recreated.</string>
+        <key>End</key>
+        <string>}
+</string>
+        <key>Indent</key><integer>1</integer>
+      </dict>
+      
+      
+      <!-- App Base -->
+      <key>Info.plist:PackageType</key>
+      <string><![CDATA[<key>CFBundlePackageType</key><string>APPL</string>]]></string>
+      
+      <key>main.swift</key>
+      <dict><key>SortOrder</key> <integer>999</integer></dict>
+      <key>main.swift:main</key>
+      <dict>
+        <key>Beginning</key> <string/>
+        <key>End</key>       <string/>
+      </dict>
+      
+      
+      <!-- Cocoa Touch Base -->
+      <key>Info.plist:iPhone</key>
+      <string><![CDATA[<key>LSRequiresIPhoneOS</key><true/>]]></string>
+      <key>Info.plist:UIRequiredDeviceCapabilities</key>
+      <dict>
+            <key>Beginning</key>
+            <string><![CDATA[<key>UIRequiredDeviceCapabilities</key>
+<array>]]></string>
+            <key>End</key>
+            <string><![CDATA[</array>]]></string>
+            <key>Indent</key>
+            <integer>1</integer>
+      </dict>
+      <key>Info.plist:UIRequiredDeviceCapabilities:base</key>
+      <string><![CDATA[<string>armv7</string>]]></string>
+      <key>Info.plist:statusBarTintForNavBar</key>
+      <string><![CDATA[<key>UIStatusBarTintParameters</key>
+<dict>
+    <key>UINavigationBar</key>
+    <dict>
+        <key>Style</key>
+        <string>UIBarStyleDefault</string>
+        <key>Translucent</key>
+        <false/>
+    </dict>
+</dict>
+]]></string>
+      <key>Info.plist:LaunchScreen</key>
+      <string><![CDATA[<key>UILaunchStoryboardName</key><string>LaunchScreen</string>]]></string>
+      <key>Assets.xcassets</key>
+      <dict>
+            <key>Path</key>
+            <string>Images.xcassets</string>
+            <key>SortOrder</key>
+            <integer>100</integer>
+      </dict>
+      <key>Base.lproj/LaunchScreen.storyboard</key>
+      <dict>
+            <key>Path</key>
+            <string>LaunchScreen.storyboard</string>
+            <key>SortOrder</key>
+            <integer>101</integer>
+      </dict>
+      
+      <key>*:implementation:methods:applicationWillResignActive:comments</key>
+      <string>// Sent when the application is about to move from active to inactive state. 
+// This can occur for certain types of temporary interruptions (such as an 
+// incoming phone call or SMS message) or when the user quits the 
+// application and it begins the transition to the background state.
+// Use this method to pause ongoing tasks, disable timers, and invalidate 
+// graphics rendering callbacks. Games should use this method to pause the 
+// game.
+</string>
+      <key>*:implementation:methods:applicationDidEnterBackground:comments</key>
+      <string>// Use this method to release shared resources, save user data, invalidate 
+// timers, and store enough application state information to restore your 
+// application to its current state in case it is terminated later.
+// If your application supports background execution, this method is called 
+// instead of applicationWillTerminate: when the user quits.
+</string>
+      <key>*:implementation:methods:applicationWillEnterForeground:comments</key>
+      <string>// Called as part of the transition from the background to the active 
+// state; here you can undo many of the changes made on entering the 
+// background.</string>
+      <key>*:implementation:methods:applicationDidBecomeActive:comments</key>
+      <string>// Restart any tasks that were paused (or not yet started) while the 
+// application was inactive. If the application was previously in the 
+// background, optionally refresh the user interface.</string>
+      <key>*:implementation:methods:applicationWillTerminate:comments</key>
+      <string>// Called when the application is about to terminate. Save data if 
+// appropriate. See also applicationDidEnterBackground:.</string>
+    
+      <key>AppDelegate.swift:UIApplicationMain</key>
+      <string>@UIApplicationMain</string>
+      <key>AppDelegate.swift:implementation:properties:window</key>
+      <string>var window: UIWindow?</string>
+      <key>AppDelegate.swift:implementation:methods:applicationdidFinishLaunchingWithOptions:body</key>
+      <string>// Override point for customization after application launch.</string>
+      <key>AppDelegate.swift:implementation:methods:applicationdidFinishLaunchingWithOptions:return</key>
+      <string>return true</string>
+      <key>*:implementation:methods:viewDidLoad:super</key>
+      <string>super.viewDidLoad()
+// Do any additional setup after loading the view, typically from a nib.</string>
+      <key>*:implementation:methods:didReceiveMemoryWarning:super</key>
+      <string>super.didReceiveMemoryWarning()
+// Dispose of any resources that can be recreated.</string>
+    </dict> <!-- Defionitions -->
+  </dict>
+</plist>

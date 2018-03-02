@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.PromiseKit</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <dict>
+        <key>Identifier</key>   <string>zzSPMPromiseKit</string>
+        <key>Name</key>
+        <string>Use the PromiseKit module. (large download)</string>
+        <key>Description</key>
+        <string>Add the "PromiseKit" module as a Swift Package Manager dependency. Promises simplify asynchronous programming, freeing you up to focus on the more important things. They are easy to learn, easy to master and result in clearer, more readable code.</string>
+        
+        <key>SortOrder</key>    <integer>20</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:PromiseKit(url: "https://github.com/mxcl/PromiseKit", from: "6.1.0")</string>
+                <string>Package.swift:spmpackagedecl:targets:default:PromiseKit</string>
+                <string>AppDelegate.swift:imports:import:zzSPMPromiseKit</string>
+                <string>ViewController.swift:imports:import:zzSPMPromiseKit</string>
+              </array>
+              <key>Definitions</key>
+              <dict>
+                <key>AppDelegate.swift:imports:import:zzSPMPromiseKit</key>
+                <string>import PromiseKit</string>
+                <key>ViewController.swift:imports:import:zzSPMPromiseKit</key>
+                <string>import PromiseKit</string>
+              </dict>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>

@@ -1,0 +1,553 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+# Additional variables used:
+#
+#     SPM_RESOLVED_UP2DATE - yes/no, does Package.resolved exist and is it newer
+#                            than Package.swift
+#     SA_CONFIG_BUILD_DIR  - .build/Xcode/[Debug|Release]
+#     SA_LIBRARY_PATH      - full path to that library
+#                              (.build/Xcode/Debug/libXcodeSPMDependencies.a)
+#     SA_COMBINED_MODMAP   - path to modmap (.build/Xcode/Debug/module....)
+#     SA_MODMAP_HEADER_DIR
+#     SPM_IMAGE            - name of image to use
+#     SPM_IMAGE_FILE       - ${IMAGE_ABI_DIR}/${SPM_IMAGE}.image
+#     SPM_UNPACK_IMAGE     - yes/no no
+#     SPM_PACKAGE_RESOLVED
+#     SPM_SKIP_FETCH
+#     SPM_PKG_DUMMY_DIR
+#     SPM_TARGET_BUILT_DIR
+#     SPM_TARGET_BUILT_CONFIG_DIR
+#
+ARGS="$@"
+#set -ve
+#set -e
+verbose=yes
+
+# usage
+
+usage() {
+	echo "usage: swift xcode build [mode] [options]"
+  echo
+  echo "Modes:"
+#  echo "  -c, --configuration debug|release [default: debug]"
+  echo "  --clean build|dist                [default: build]"
+  echo
+  echo "Options:"
+#  echo "  --color auto|always|never         [default: auto]"
+  echo "  -v, --verbose"
+}
+
+if [[ "$ARGS" == *"--help"* ]]; then
+  usage
+  exit 0
+fi
+
+SCRIPT_START_TS=$(date +%s)
+SCRIPT_DIR=$(dirname "$0")
+
+
+# ********** Load common stuff ******************
+
+SWIFT_XCODE_ENV_SOURCED=yes . "${SCRIPT_DIR}/swift-xcode-env"
+rc=$?; if [ $rc -ne 0 ]; then exit $rc; fi
+
+
+# ********** Check Build status *****************
+
+# Note: we use the Xcode configuration (uppercase)
+SA_CONFIG_BUILD_DIR="${SPM_BUILD_DIR}/Xcode/${TARGET}/${CONFIGURATION}"
+SA_LIBRARY_PATH="${SA_CONFIG_BUILD_DIR}/${SA_LIBRARY_NAME}"
+SA_LIBRARY_DEBUG_PATH="${SPM_BUILD_DIR}/Xcode/${TARGET}/Debug/${SA_LIBRARY_NAME}"
+SA_LIBRARY_RELEASE_PATH="${SPM_BUILD_DIR}/Xcode/${TARGET}/Release/${SA_LIBRARY_NAME}"
+SA_MODMAP_HEADER_DIR="${SA_CONFIG_BUILD_DIR}"
+SA_COMBINED_MODMAP="${SA_MODMAP_HEADER_DIR}/module.modulemap"
+SPM_PACKAGE_RESOLVED="${SPM_PACKAGE_DIR}/Package.resolved"
+
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Build setup:"
+  echo "  Build dir: ${SA_CONFIG_BUILD_DIR}"
+  echo "  Deplib:    ${SA_LIBRARY_PATH}"
+fi
+
+
+# Make sure the target dir exists
+
+if [[ ! -d "${SPM_PACKAGE_DIR}" ]]; then
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "Create package build dir: ${SPM_PACKAGE_DIR}"
+  fi
+  mkdir -p "${SPM_PACKAGE_DIR}"
+fi
+
+
+# Link Package.swift into build-dir
+  
+if [[ -f "${SPM_CONFIG}" ]]; then
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "Copying Package.swift"
+    echo "  from: ${SPM_CONFIG}"
+    echo "  to:   ${SPM_PACKAGE_DIR}/Package.swift"
+  fi
+  cp -a "${SPM_CONFIG}" "${SPM_PACKAGE_DIR}/Package.swift"
+else
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "Missing Package.swift?: ${SPM_CONFIG}"
+  fi
+fi
+
+
+if [[ "x${BUILD_IN_XCODE}" = "xyes" ]]; then
+  # this is a little tricky, we should be more flexible here:
+  #   grep  path: "."
+  if [[ $(grep -c 'path: "."' < "${SPM_CONFIG}") -eq 0 ]]; then
+    # TODO: this is Swift 4 specific, Swift 3 doesn't require the subdir
+    SPM_PKG_DUMMY_DIR="${SPM_PACKAGE_DIR}/Sources/${PRODUCT_NAME}"
+    if [[ ! -d "${SPM_PACKAGE_SOURCE_DIR}/Sources/${PRODUCT_NAME}" ]]; then
+      echo "Warning: Missing 'Sources' dir in: ${SPM_PACKAGE_SOURCE_DIR}"
+    fi
+    mkdir -p "${SPM_PKG_DUMMY_DIR}"
+  else
+    SPM_PKG_DUMMY_DIR="${SPM_PACKAGE_DIR}"
+  fi
+  
+  # create a dummy
+  # TODO: differentiate between Executable and Library Package?
+  echo "fileprivate let swiftXcodeDummy = true;" > "${SPM_PKG_DUMMY_DIR}/dummy.swift"
+  
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "Dummy dir ${SPM_PKG_DUMMY_DIR}"
+  fi
+fi
+
+
+# Check whether we want an image
+
+SPM_IMAGE_FILE="${IMAGE_ABI_DIR}/${SPM_IMAGE}.image"
+SPM_UNPACK_IMAGE=no
+if [[ ! -d "${SPM_BUILD_DIR}" ]]; then
+  if [[ "x${SPM_IMAGE}" != "x" ]]; then
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo "  Image:     UNPACK '${SPM_IMAGE}'."
+    fi
+    SPM_UNPACK_IMAGE=yes
+  else
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo "  Image:     none set."
+    fi
+  fi
+else
+  if [[ "x$verbose" = "xyes" ]]; then
+    if [[ "x${SPM_IMAGE}" != "x" ]]; then
+      echo "  Image:     ${SPM_BUILD_RELDIR} exists, do not use: '${SPM_IMAGE}'"
+    fi
+  fi
+fi
+
+
+# ********** Are we in CLEAN mode? **************
+
+if [[ "$ARGS" == *"--clean"* ]]; then
+  if [[ "$ARGS" == *"--clean dist"* ]]; then
+    CLEAN_MODE=dist
+  elif [[ "$ARGS" == *"--clean build"* ]]; then
+    CLEAN_MODE=build
+  else
+    CLEAN_MODE=build
+  fi
+fi
+
+clean() {
+  if [[ "x$verbose" = "xyes" ]]; then echo -n "Cleaning package .."; fi
+    
+  # clean our Xcode dir
+  rm -rf ${SA_CONFIG_BUILD_DIR}
+  
+  # invoke SPM clean
+  if [[ ${SWIFT_MAJOR} -gt 3 || ${SWIFT_MINOR} -gt 0 ]]; then
+    SWIFT_CLEAN="${SWIFT_DRIVER} package clean"
+  else
+    SWIFT_CLEAN="${SWIFT_DRIVER} build --clean ${CLEAN_MODE}"
+  fi
+  
+  ${SWIFT_CLEAN} # $ARGS - needs cleanup
+  rc=$?
+  if [ $rc -ne 0 ]; then 
+    echo ".. FAILED?!"
+    exit $rc;
+  fi
+  
+  # TBD: anything else :-)  
+  if [[ "x${CLEAN_MODE}" = "xdist" ]]; then
+    if [[ "x$verbose" = "xyes" ]]; then echo -n ".. dist-clean .."; fi
+    if [[ -d "${SPM_BUILD_DIR}" ]]; then
+      rm -rf "${SPM_BUILD_DIR}"
+      rc=$?; if [ $rc -ne 0 ]; then echo ".. FAILED! ($RC)"; exit $rc; fi
+    fi
+    if [[ -f "${SPM_PACKAGE_DIR}/Package.resolved" ]]; then
+      rm "${SPM_PACKAGE_DIR}/Package.resolved"
+      rc=$?; if [ $rc -ne 0 ]; then echo ".. FAILED! ($RC)"; exit $rc; fi
+    fi
+  fi
+  
+  if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
+}
+
+if [[ -n "${CLEAN_MODE}" ]]; then
+  clean
+  exit 0
+fi
+
+
+# ********** Unpack image if requested **********
+
+printImageMissingError() {
+  echo "Warning: Missing image: ${SPM_IMAGE_FILE}"
+  echo
+  echo "This significantly slows down initial and subsequent 'clean' compilation speeds. "
+  echo "The usual reason for this is that a new Xcode or Swift runtime has been installed."
+  echo
+  echo -n "Suggested fix: "
+  echo "Re-install the image provider after installing a new Swift/Xcode:"
+  echo
+  echo "  brew reinstall ${SPM_IMAGE_FILE}"
+  echo
+}
+
+unpackImage() {
+  if [[ ! -f "${SPM_IMAGE_FILE}" ]]; then
+    # this is OK, we just can't use it and need to rebuild from scratch
+    printImageMissingError
+  else
+    echo -n "Unpacking image: ${SPM_IMAGE_FILE} .."
+    OLDDIR="$PWD"
+    cd "${SPM_PACKAGE_DIR}"
+    tar -z -x -f "${SPM_IMAGE_FILE}"
+    rc=$?
+    cd "${OLDDIR}"
+    if [ $rc -ne 0 ]; then 
+      echo ".. FAILED! ($RC)"
+      exit $rc
+    fi
+    echo ".. done."
+    if [[ ! -d "${SPM_BUILD_DIR}" ]]; then
+      echo "Warning: ${SPM_BUILD_RELDIR} does not exist after unpacking '${SPM_IMAGE_NAME}'?"
+    fi
+    
+    # Make it appear newer. This is a little problematic, because maybe
+    # the user changed it before running the build! (again, a hash
+    # on Package.swift would be better)
+    if [[ -f "${SPM_PACKAGE_DIR}/Package.resolved" ]]; then
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "touching resolved ..."
+      fi
+      touch "${SPM_PACKAGE_DIR}/Package.resolved"
+    fi
+    # FIXME: do not sleep but rather use explicit dates (now + 1s)
+    sleep 1 # timestamp granularity ...
+    if [[ -f "${SA_LIBRARY_DEBUG_PATH}" ]]; then
+      touch "${SA_LIBRARY_DEBUG_PATH}"
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "touching debug library ..."
+      fi
+    else
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "got no debug library: ${SA_LIBRARY_DEBUG_PATH}"
+      fi
+    fi
+    if [[ -f "${SA_LIBRARY_RELEASE_PATH}" ]]; then
+      touch "${SA_LIBRARY_RELEASE_PATH}"
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "touching release library ..."
+      fi
+    else
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "got no release library: ${SA_LIBRARY_RELEASE_PATH}"
+      fi
+    fi
+  fi
+}
+
+if [[ "x${SPM_UNPACK_IMAGE}" = "xyes" ]]; then
+  unpackImage
+fi
+
+
+# ********** Check Build status *****************
+# Note: must happen AFTER image unpack!
+
+SPM_NEEDS_BUILD=no
+
+# -nt checks whether the .resolved exists *and* is newer than the rhs
+if [[ "${SPM_PACKAGE_RESOLVED}" -nt "${SPM_CONFIG}" ]]; then
+  SPM_RESOLVED_UP2DATE=yes
+else
+  # .resolved either missing, or older than config
+  SPM_RESOLVED_UP2DATE=no
+fi
+
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Build status:"
+  echo "  Package resolved: ${SPM_RESOLVED_UP2DATE}"
+  echo "    resolved:       ${SPM_PACKAGE_RESOLVED}"
+  echo "    package:        ${SPM_CONFIG}"
+fi
+
+
+# is our static library newer?
+# We use our static lib as a change marker. If it is old, we rebuild. If it
+# is new, we just use it?! Thats it!
+
+SPM_SKIP_FETCH="${SPM_RESOLVED_UP2DATE}"
+
+if [[ $SPM_RESOLVED_UP2DATE = "yes" ]]; then
+  if [[ "${SA_LIBRARY_PATH}" -nt "${SPM_PACKAGE_RESOLVED}" ]]; then
+    # our library got build *after* the Package was resolved, so it must be
+    # newer
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo "Package is resolved and static library newer. Nothing to do."
+    fi
+    exit 0                                                   # SUCCESSFULL EXIT
+  else
+    if [[ "x$verbose" = "xyes" ]]; then
+      if [[ -f "${SA_LIBRARY_PATH}" ]]; then
+        echo "Package is resolved, but static library is older:"
+        # TODO: fix for non-macOS
+        LIBSTAT=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "${SA_LIBRARY_PATH}"      )
+        PKGSTAT=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "${SPM_PACKAGE_RESOLVED}" )
+        echo "  ${SA_LIBRARY_PATH}:      ${LIBSTAT}"
+        echo "  ${SPM_PACKAGE_RESOLVED}: ${PKGSTAT}"
+        unset LIBSTAT PKGSTAT
+      else
+        # this happens if we `rm -rf .build`, .resolved is still there
+        echo "Package is resolved, but static library is missing:"
+        echo "  ${SA_LIBRARY_PATH}"
+        SPM_SKIP_FETCH=no
+      fi
+    fi
+  fi
+fi
+
+
+# ********** Fetch/Resolve **********************
+
+if hash swift-progress 2>/dev/null; then
+  SWIFT_PROGRESS=swift-progress
+  SPM_SKIP_FETCH=yes # combine the two things
+fi
+
+spmFetch() {
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  echo "Fetch package dependencies .. ($(echo $((`date +%s` - SCRIPT_START_TS))))"
+  if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package --package-path "${SPM_PACKAGE_DIR}" resolve
+    rc=$?
+  else
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package --chdir "${SPM_PACKAGE_DIR}" fetch
+    rc=$?
+  fi
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  if [ $rc -ne 0 ]; then exit $rc; fi
+  echo "Done fetching package dependencies. (${TIME_ELAPSED}s)"
+}
+
+if [[ $SPM_SKIP_FETCH = "no" ]]; then
+  spmFetch
+fi
+
+
+# ********** SPM Build **************************
+
+SPM_TARGET_BUILT_DIR="${SPM_PACKAGE_DIR}/${SPM_BUILD_RELDIR}/${TARGET}"
+SPM_TARGET_BUILT_CONFIG_DIR="${SPM_TARGET_BUILT_DIR}/${SPM_BUILD_CONFIG}"
+
+spmBuild() {
+  if [[ "x${SDK_DIR}" = "x" ]]; then
+    SDK_OPT=
+    # This has been replaced by the -isysroot below.
+    # TBD: Can we drop this here? Probably.
+    INC_OPT="-Xswiftc -I -Xswiftc "${SWIFT_SYSTEM_DIR}""
+  else
+    SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR} -Xcc -isysroot -Xcc ${SDK_DIR}"
+  fi
+  
+  # seems to work for simulator too, but macOS?
+  # required for device build
+  if [[ "x${SPM_USE_BITCODE}" = "xyes" ]]; then
+    BITCODE_OPT="-Xswiftc -embed-bitcode"
+  fi
+  
+  
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  echo "Building dependencies (${SPM_BUILD_CONFIG}) ... (${TIME_ELAPSED}s)"
+  OLD_PWD="${PWD}"
+  cd "${SPM_PACKAGE_DIR}"
+  
+  if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build --configuration ${SPM_BUILD_CONFIG} \
+                          --package-path "${SPM_PACKAGE_DIR}" \
+                           -Xswiftc -target -Xswiftc ${TARGET} \
+                           ${SDK_OPT} ${BITCODE_OPT} \
+                           ${INC_OPT}
+    rc=$?
+  else
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build --configuration ${SPM_BUILD_CONFIG} \
+                          --chdir "${SPM_PACKAGE_DIR}"        \
+                           -Xswiftc -target -Xswiftc ${TARGET} \
+                           ${SDK_OPT} ${BITCODE_OPT} \
+                           ${INC_OPT}
+    rc=$?
+  fi
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  if [ $rc -ne 0 ]; then exit $rc; fi
+  
+  # PATCH LOCATION, MOVE STUFF  
+  # FIXME: check whether it is a link
+  # .buildzz/.build/ - x86_64-apple-macosx10.10/debug/
+  SPM_INCORRECT_BUILT_ARCH_DIR="${SPM_BUILD_RELDIR}/$(readlink ${SPM_BUILD_RELDIR}/${SPM_BUILD_CONFIG})"
+  echo "BUILT-DIR: ${SPM_INCORRECT_BUILT_ARCH_DIR}"
+  if [[ -d "${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
+    rm -rf "${SPM_TARGET_BUILT_CONFIG_DIR}"
+  fi
+  mkdir -p "${SPM_TARGET_BUILT_DIR}"
+  mv "${SPM_INCORRECT_BUILT_ARCH_DIR}" "${SPM_TARGET_BUILT_CONFIG_DIR}"
+  
+  cd "${OLD_PWD}"
+  echo "Done building package (for dependencies). (${TIME_ELAPSED}s)"
+}
+
+spmBuild
+
+
+# ********** grab locations *********************
+
+if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
+  if [[ -d "${SPM_BUILD_DIR}/checkouts" ]]; then
+    PACKAGE_CHECKOUT_DIR="${SPM_BUILD_DIR}/checkouts"
+  elif [[ -d "${SPM_PACKAGE_DIR}/Packages" ]]; then # 3.0
+    PACKAGE_CHECKOUT_DIR="${SPM_PACKAGE_DIR}/Packages"
+  else
+    echo "swift package resolve failed."
+    exit 42
+  fi
+else
+  if [[ -d "${SPM_PACKAGE_DIR}/Packages" ]]; then # 3.0
+    PACKAGE_CHECKOUT_DIR="${SPM_PACKAGE_DIR}/Packages"
+  elif [[ -d "${SPM_BUILD_DIR}/checkouts" ]]; then
+    PACKAGE_CHECKOUT_DIR="${SPM_BUILD_DIR}/checkouts"
+  else
+    echo "swift package fetch failed."
+    exit 42
+  fi
+fi
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Checkout dir: ${PACKAGE_CHECKOUT_DIR}"
+fi
+
+
+# ********** Archive ****************************
+
+mkdir -p "${SA_CONFIG_BUILD_DIR}"
+
+# builds all, we really just want the deps TODO uh oh :-)
+# there is no real need to do this:
+#   rm -rf "${SPM_BUILD_DIR}/${SPM_BUILD_CONFIG}/${PRODUCT_NAME}.*"
+
+# all the rest should be dependencies, link them
+
+bundleInStaticLib() {
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  echo "Bundling dependencies in ${SA_LIBRARY_PATH} ... (${TIME_ELAPSED}s)"
+  
+  # delete old dependency lib
+  rm -f "${SA_LIBRARY_PATH}"
+  
+  # Note: the -q allows for dupes! (which is what we want here)
+  #       the -S skips symbol table creation (done by ranlib after the fact)
+  SPM_DEPENDENCIES="$(ls -d ${SPM_TARGET_BUILT_CONFIG_DIR}/*${SPM_MODULE_BUILD_SUFFIX})"
+  for DEP in ${SPM_DEPENDENCIES}; do
+    DEP_BASENAME="$(basename ${DEP})"
+    if [[ "${DEP_BASENAME}" = "${PRODUCT_NAME}${SPM_MODULE_BUILD_SUFFIX}" ]]; then
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "  Do not archive own module: ${PRODUCT_NAME}"
+      fi
+    else
+      echo -n "  Archiving dependency: `basename ${DEP} | sed s#.build##g` .."
+      ar -c -q -S "${SA_LIBRARY_PATH}" $(find "${DEP}" -name *.o)
+      rc=$?
+      if [[ $rc -ne 0 ]]; then 
+        echo "Archiving failed"
+        exit $rc
+      fi
+      echo ".. OK."
+    fi
+  done
+  
+  if [[ ! -f "${SA_LIBRARY_PATH}" ]]; then
+    echo -n "  Archiving dummy:"
+    ar -c -q -S "${SA_LIBRARY_PATH}" "${SPM_TARGET_BUILT_CONFIG_DIR}/${PRODUCT_NAME}${SPM_MODULE_BUILD_SUFFIX}/dummy.swift.o"
+    rc=$?
+    if [[ $rc -ne 0 ]]; then 
+      echo "Archiving failed"
+      exit $rc
+    fi
+    echo ".. OK."
+  fi
+  
+  ranlib "${SA_LIBRARY_PATH}" # 2>/dev/null # drop warning
+  rc=$?; if [ $rc -ne 0 ]; then exit $rc; fi
+  
+  TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
+  BUNDLE_SIZE=$(du -h "${SA_LIBRARY_PATH}" | cut -f1 | tr -d '[:space:]')
+  echo "Done bundling dependencies, size: ${BUNDLE_SIZE}. (${TIME_ELAPSED}s)"
+}
+
+bundleInStaticLib
+
+
+# ********** Module Map *************************
+
+# TODO: maybe rather create as a private module map like in ZeeQL!
+
+generateCombinedModuleMap() {
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo -n "Creating combined module map, and linking headers .."
+  fi
+  
+  PACKAGE_CHECKOUT_DIR_NAME=$(basename "${PACKAGE_CHECKOUT_DIR}")
+  
+  rm -f ${SA_COMBINED_MODMAP}
+  
+  OLD_PWD="${PWD}"
+  cd "${PACKAGE_CHECKOUT_DIR}"
+  ls "${PACKAGE_CHECKOUT_DIR}" # TEST
+  
+  MODMAPS="$(ls */module.modulemap 2>/dev/null)"
+  if [[ "x${MODMAPS}" != "x" ]]; then
+    for i in */module.modulemap; do 
+      cat $i >> "${SA_COMBINED_MODMAP}"
+    
+      for j in $(ls $(dirname $i)/*.h 2>/dev/null); do
+        if [[ "x$verbose" = "xyes" ]]; then
+          echo "  link module map header: $j"
+        fi
+      
+        # FIXME: this assumes a consistent hierarchy, but relative path
+        #        processing is hard in bash (w/o invoking perl ;-) )
+        ( cd "${SA_MODMAP_HEADER_DIR}";
+          ln -sf "../../../${PACKAGE_CHECKOUT_DIR_NAME}/${j}" . )
+      done
+    done
+    if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
+  else
+    if [[ "x$verbose" = "xyes" ]]; then echo ".. no maps found."; fi      
+  fi
+  
+  cd "${OLD_PWD}"
+}
+
+generateCombinedModuleMap

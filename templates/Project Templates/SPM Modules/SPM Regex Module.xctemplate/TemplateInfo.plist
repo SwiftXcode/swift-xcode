@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.Regex</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <dict>
+        <key>Identifier</key>   <string>zzSPMRegex</string>
+        <key>Name</key>
+        <string>Use the Regex module.</string>
+        <key>Description</key>
+        <string>Add the "Regex" module as a Swift Package Manager dependency. Pattern match like a boss.</string>
+        
+        <key>SortOrder</key>    <integer>20</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:Regex(url: "https://github.com/sharplet/Regex", from: "1.1.0")</string>
+                <string>Package.swift:spmpackagedecl:targets:default:Regex</string>
+                <!-- TODO: this is project specific, drop it for now
+                <string>AppDelegate.swift:imports:import:zzSPMRegex</string>
+                <string>ViewController.swift:imports:import:zzSPMRegex</string>
+                <string>main.swift:imports:import:zzSPMRegex</string>
+                -->
+              </array>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>

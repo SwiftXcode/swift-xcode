@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+# Additional variables used:
+#
+#     SA_IMAGE      - name of image (e.g. Blub_XcodeImage)
+#     SA_IMAGE_FILE - Blub.image
+#     SA_IMAGE_PATH - .build/Blub.image
+#
+ARGS="$@"
+#set -ve
+#set -e
+verbose=yes
+
+# usage
+
+usage() {
+	echo "usage: swift xcode image"
+#  echo "Options:"
+#  echo "  --color auto|always|never         [default: auto]"
+}
+
+if [[ "$ARGS" == *"--help"* ]]; then
+  usage
+  exit 0
+fi
+
+SCRIPT_START_TS=$(date +%s)
+SCRIPT_DIR=$(dirname "$0")
+
+
+# ********** Load common stuff ******************
+
+SWIFT_XCODE_ENV_SOURCED=yes . "${SCRIPT_DIR}/swift-xcode-env"
+rc=$?; if [ $rc -ne 0 ]; then exit $rc; fi
+
+
+# ********** Build Debug/Release ****************
+
+echo "Building and bundling debug library ..."
+CONFIGURATION=Debug "${SCRIPT_DIR}/swift-xcode-build"
+echo "---"
+echo
+
+echo "Building and bundling release library ..."
+CONFIGURATION=Release "${SCRIPT_DIR}/swift-xcode-build"
+echo "---"
+echo
+
+
+# ********** Create Image ***********************
+
+#PACKAGE_TARBALL_NAME=$(PACKAGE)-$(MAJOR).$(MINOR).$(SUBMINOR).image
+#PACKAGE_TARBALL_LATEST=$(PACKAGE).image
+#PACKAGE_TARBALL=$(SWIFT_BUILD_DIR)/$(PACKAGE_TARBALL_NAME)
+
+# We cut off `XcodeImage` if set
+SA_IMAGE=${SA_IMAGE:=$(basename $(pwd)|sed "s#_XcodeImage\$##g")}
+SA_IMAGE_FILE="${SA_IMAGE}.image"
+SA_IMAGE_PATH="${SPM_BUILD_RELDIR}/${SA_IMAGE_FILE}"
+
+if [[ ! -d "${SPM_BUILD_RELDIR}" ]]; then
+  echo "Could not locate SPM build dir?: ${SPM_BUILD_RELDIR}"
+  exit 31
+fi
+
+echo "Creating image ${SA_IMAGE} ..."
+
+tar --disable-copyfile \
+    -c \
+	  --exclude "*.image"		  \
+	  --exclude "ModuleCache"	\
+	  --exclude "*.o"		      \
+	  -f "${SA_IMAGE_PATH}"   \
+    \
+    "${SPM_BUILD_RELDIR}"   \
+	  Package.resolved
+rc=$?
+if [[ $rc -ne 0 ]]; then 
+  echo "image creation failed"
+  exit $rc
+fi
+
+IMAGE_SIZE=$(du -h "${SA_IMAGE_PATH}" | cut -f1 | tr -d '[:space:]')
+
+echo "done, size ${IMAGE_SIZE}: ${SA_IMAGE_PATH}"

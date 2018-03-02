@@ -1,0 +1,183 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+# Variables:
+#
+#     XCODE_TEMPLATE_INSTALL_DIR - yes/no
+#
+ARGS="$@"
+#set -ve
+#set -e
+verbose=yes
+
+
+# environment
+
+prefix="${prefix:-/usr/local}"
+XCODE_TEMPLATE_INSTALL_DIR="${XCODE_TEMPLATE_INSTALL_DIR:-${HOME}/Library/Developer/Xcode/Templates}"
+XCODE_TEMPLATE_SOURCE_DIR="${prefix}/lib/xcode/templates"
+
+# usage
+
+usage() {
+	echo "usage: swift xcode link-templates [--help] [--deletelinks] [--replacedirs] [--dryrun]"
+  echo
+  echo "   Links Xcode templates in:"
+  echo 
+  echo "     ${XCODE_TEMPLATE_SOURCE_DIR}"
+  echo
+  echo "   to your home collection:"
+  echo 
+  echo "     ${XCODE_TEMPLATE_INSTALL_DIR}"
+  echo 
+  echo "Options:"
+  echo 
+  echo "   --help        - Show this page."
+  echo "   --deletelinks - Delete dead template links from the home collection"
+  echo "                   (e.g. after uninstalling an swift-xcode image)."
+  echo "   --replacedirs - Delete template directories in the home collection"
+  echo "                   and replace them w/ links."
+  echo "   --dryrun      - Do not perform any modifications, just report the"
+  echo "                   desired changed."
+}
+
+if [[ "$ARGS" == *"--help"* ]]; then
+  usage
+  exit 0
+fi
+
+deletelinks=no
+if [[ "$ARGS" == *"--deletelinks"* ]]; then
+  deletelinks=yes
+fi
+
+dryrun=no
+if [[ "$ARGS" == *"--dryrun"* ]]; then
+  dryrun=yes
+fi
+
+replacedirs=no
+if [[ "$ARGS" == *"--replacedirs"* ]]; then
+  replacedirs=yes
+fi
+
+
+# work it
+
+if [[ "x${dryrun}" = "xyes" ]]; then
+  echo "--dryrun - not doing any actual modifications ..."
+  echo
+fi
+
+IFS="
+"
+
+linkFromBrew() {
+  echo "Linking templates in ${XCODE_TEMPLATE_SOURCE_DIR}:"
+  OLDPWD="$PWD"
+  cd "${XCODE_TEMPLATE_SOURCE_DIR}"
+  for reldir in $(find . -name "*.xctemplate" -type d | sed s#^./##g); do
+    targetdir="${XCODE_TEMPLATE_INSTALL_DIR}/${reldir}"
+    sourcedir="${XCODE_TEMPLATE_SOURCE_DIR}/${reldir}"
+    basedir="$(dirname ${XCODE_TEMPLATE_INSTALL_DIR}/${reldir})"
+    echo -n "  Template: $reldir .."
+      
+    if [[ -h "${targetdir}" ]]; then
+      linksource="$(readlink "${targetdir}")"
+      if [[ "x${sourcedir}" = "x${linksource}" ]]; then
+        echo ".. matches."
+      else
+        echo ".. link to: ${linksource}"
+      fi
+    elif [[ -d "${targetdir}" ]]; then
+      if [[ "x${replacedirs}" = "xyes" ]]; then
+        if [[ "x${dryrun}" = "xyes" ]]; then
+          echo ".. dryrun, should REPLACE with link."
+        else
+          echo -n ".. directory (REPLACING with link)."
+          rm -r "${targetdir}"
+          echo -n ".. dir dropped .."
+          ln -s "${sourcedir}" "${targetdir}"; rc=$?
+          if [ $rc -ne 0 ]; then 
+            echo "FAILED TO LINK dir"
+            exit $rc; 
+          fi
+          echo ".. linked!"
+        fi
+      else
+        echo ".. directory (not replacing)."
+      fi
+    elif [[ -e "${targetdir}" ]]; then
+      echo ".. exists, not a link: ${targetdir}"
+    else
+      # our template does not exist in target, link it!
+      if [[ "x${dryrun}" = "xyes" ]]; then
+        echo ".. dryrun, should link ${reldir}"
+      else
+        mkdir -p "${basedir}"
+        ln -s "${sourcedir}" "${targetdir}"; rc=$?
+        if [ $rc -ne 0 ]; then 
+          echo "FAILED TO LINK"
+          echo "  source: ${sourcedir}"
+          echo "  base:   ${basedir}"
+          echo "  target: ${targetdir}"
+          exit $rc; 
+        fi
+        echo ".. linked!"
+      fi
+    fi
+  done
+  cd $OLDPWD
+  echo "done."
+}
+
+validateLinksToBrew() {
+  echo "Checking template links in ${XCODE_TEMPLATE_INSTALL_DIR}:"
+  OLDPWD="$PWD"
+  cd "${XCODE_TEMPLATE_INSTALL_DIR}"
+  for reldir in $(find . -name "*.xctemplate" -type l | sed s#^./##g); do
+    targetdir="${XCODE_TEMPLATE_INSTALL_DIR}/${reldir}"
+    sourcedir="${XCODE_TEMPLATE_SOURCE_DIR}/${reldir}"
+    echo -n "  Installed: $reldir"
+    
+    linksource="$(readlink "${targetdir}")"
+    if [[ -e "${linksource}" ]]; then
+      if [[ "x${sourcedir}" = "x${linksource}" ]]; then
+        echo ".. matches."
+      else
+        echo ".. valid link to: ${linksource}."
+      fi
+    else
+      echo -n ".. link target is invalid"
+      if [[ "x${deletelinks}" = "xyes" ]]; then
+        if [[ "x${dryrun}" = "xyes" ]]; then
+          echo ".. dryrun, should DELETE link."
+        else
+          echo -n " .."
+          rm "${reldir}"
+          echo ".. deleted."
+        fi
+      else
+        echo ": ${linksource}"
+      fi
+    fi
+  done
+  cd $OLDPWD
+  echo "done."
+}
+
+if [[ -d "${XCODE_TEMPLATE_SOURCE_DIR}" ]]; then
+  linkFromBrew
+else
+  echo "No template sources installed in: ${XCODE_TEMPLATE_SOURCE_DIR}"
+fi
+
+if [[ -d "${XCODE_TEMPLATE_INSTALL_DIR}" ]]; then
+  validateLinksToBrew
+else
+  echo "No templates installed in: ${XCODE_TEMPLATE_INSTALL_DIR}"
+fi

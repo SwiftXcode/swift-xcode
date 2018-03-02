@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spmCocoaTouchApplicationBase</string>
+
+    <key>Ancestors</key>
+    <array>
+      <string>de.zeezide.dt.unit.swift.cocoaTouchApplicationBase</string>
+    </array>
+    
+    <key>Concrete</key>
+    <false/>
+
+
+    <!-- Nodes -->
+    
+    <key>Nodes</key>
+    <array>
+      <string>Package.swift:header</string>
+      <string>Package.swift:spmpackagedecl</string>
+      <string>Package.swift:spmpackagedecl:deps</string>
+      <string>Package.swift:spmpackagedecl:targets</string>
+      <string>Package.swift:spmpackagedecl:targets:default</string>
+    </array>
+    
+
+    <!-- Definitions -->
+              
+    <key>Definitions</key>
+    <dict>
+      <key>Package.swift</key>
+      <dict>
+        <key>SortOrder</key><integer>1</integer>
+        <key>TargetIdentifiers</key><array/>
+      </dict>
+      
+      <key>Package.swift:header</key>
+      <string>// swift-tools-version:4.0
+//___FILEHEADER___
+import PackageDescription
+</string>
+      <key>*:spmpackagedecl</key>
+  		<dict>
+  			<key>Beginning</key>
+  			<string>let package = Package(
+    name: "___PACKAGENAMEASIDENTIFIER___",
+</string>
+  			<key>End</key>
+	  		<string>)</string>
+      </dict>
+      
+      <key>*:spmpackagedecl:deps</key>
+  		<dict>
+  			<key>Beginning</key>
+  			<string>    dependencies: [
+        /* Add your package dependencies in here
+        .package(url: "https://github.com/AlwaysRightInstitute/cows.git",
+                 from: "1.0.0"),
+        */</string>
+  			<key>End</key>
+	  		<string>    ],
+</string>
+      </dict>
+      
+      <key>*:spmpackagedecl:targets</key>
+  		<dict>
+  			<key>Beginning</key>
+  			<string>    targets: [</string>
+  			<key>End</key>
+	  		<string>    ]</string>
+      </dict>
+      
+      <key>*:spmpackagedecl:targets:default</key>
+  		<dict>
+  			<key>Beginning</key>
+  			<string>        // "." is because we do not have the sources in Sources,
+        .target(name: "___PACKAGENAMEASIDENTIFIER___", 
+                dependencies: [
+                  /* Add your target dependencies in here, e.g.: */
+                  // "cows",</string>
+            			<key>End</key>
+          	  		<string>                ],
+                path: ".")</string>
+      </dict>
+      
+      <key>Package.swift:spmpackagedecl:deps:*</key>
+      <string>        .package(___*___),</string>
+      <key>Package.swift:spmpackagedecl:targets:default:*</key>
+      <string>                  "___*___",</string>
+    </dict>
+  </dict>
+</plist>

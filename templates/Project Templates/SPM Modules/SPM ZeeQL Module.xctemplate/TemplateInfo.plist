@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.ZeeQL</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <!-- ZeeQL -->
+      <!-- TODO: does not work *on iOS* because CSQLite3 is built as macosx
+      <dict>
+        <key>Identifier</key>   <string>zzSPMZeeQL</string>
+        <key>Name</key>
+        <string>Use ZeeQL, the CoreData like Swift ORM (in-dev).</string>
+        <key>Description</key>
+        <string>Whether the application should use the ZeeQL ORM.</string>
+        
+        <key>SortOrder</key>    <integer>11</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:zeeql(url: "https://github.com/ZeeQL/ZeeQL3.git", from: "0.6.0")</string>
+                <string>Package.swift:spmpackagedecl:targets:default:ZeeQL3</string>
+                <string>AppDelegate.swift:imports:import:zzSPMZeeQL</string>
+                <string>ViewController.swift:imports:import:zzSPMZeeQL</string>
+              </array>
+              <key>Definitions</key>
+              <dict>
+                <key>AppDelegate.swift:imports:import:zzSPMZeeQL</key>
+                <string>import ZeeQL</string>
+                <key>ViewController.swift:imports:import:zzSPMZeeQL</key>
+                <string>import ZeeQL</string>
+              </dict>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+      -->
+    </array>
+  </dict>
+</plist>

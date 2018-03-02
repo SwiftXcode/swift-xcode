@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+
+if [ "$DEBUG" = "yes" ]; then
+  set -x
+fi
+
+SCRIPT_DIR=$(dirname "$0")
+SCRIPT_BASENAME=$(basename "$0")
+
+usage() {
+  echo "usage: swift xcode <subcommand>"
+  echo
+  echo "Available subcommands are:"
+  echo "   build     Build SPM package so that Xcode can consume it."
+  echo "   image     Build an image from an SPM Template package."
+  echo "   env       Print environment etc."
+  echo
+  echo "Try 'swift xcode <subcommand> help' for details."
+}
+
+main() {
+  if [ $# -lt 1 ]; then
+    usage
+    exit 1
+  fi
+
+  # sanity checks
+  SUBCOMMAND="$1"; shift
+  
+  if test -x "${SCRIPT_DIR}/${SCRIPT_BASENAME}-$SUBCOMMAND"; then
+    RUNCMD="${SCRIPT_DIR}/${SCRIPT_BASENAME}-$SUBCOMMAND"
+  else
+    THECMD="`ls ${SCRIPT_DIR}/${SCRIPT_BASENAME}-${SUBCOMMAND}* | head -n 1`"
+    if test -x "${THECMD}"; then
+      RUNCMD="${THECMD}"
+    else
+      echo "Unknown subcommand: '$SUBCOMMAND'"
+      echo
+      usage
+      exit 1
+    fi
+  fi
+
+  # run command
+  . "${RUNCMD}"
+}
+
+main "$@"

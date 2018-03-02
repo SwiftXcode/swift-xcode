@@ -1,0 +1,253 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+# Xcode variables we use (and set when missing):
+#
+#     BUILD_IN_XCODE          - yes/no
+#     SRCROOT                 - actually the _package_ root (SRCROOT of Xcode)
+#     CONFIGURATION           - Debug or Release
+#     PRODUCT_NAME            - name of package (defaults to current dirname)
+#     TOOLCHAIN_DIR           - toolchain to use
+#     DT_TOOLCHAIN_DIR        - toolchain to use, backup
+#     BUILD_DIR               - defaults to Xcode temp location, or .build
+#     CONFIGURATION_BUILD_DIR - careful, this is relative in Xcode itself
+#     CONFIGURATION_TEMP_DIR  - careful, this is relative in Xcode itself
+#     PLATFORM_NAME           - e.g. iphoneos / macosx
+#     PLATFORM_PREFERRED_ARCH - e.g. arm64    / x86_64
+#     CURRENT_ARCH            - e.g. arm64    / x86_64
+#     TARGET                  - arm64-apple-ios7.0
+#     SWIFT_PLATFORM_TARGET_PREFIX - ios / macosx (vs iphoneos!)
+#     DEPLOYMENT_TARGET_SETTING_NAME - MACOSX_DEPLOYMENT_TARGET /
+#                                      IPHONEOS_DEPLOYMENT_TARGET
+#
+# Swift Environment variables
+#
+#     SWIFT_DRIVER            - path to `swift` binary (can be relative)
+#     SWIFT_ABI_RELDIR        - e.g. "swift5.0"
+#     SPM_BUILD_CONFIG        - debug or release (lowercase)
+#     SPM_BUILD_RELDIR        - .build
+#     SPM_PACKAGE_SOURCE_DIR  - ${SRCROOT}/${PRODUCT_NAME} (or other)
+#     SPM_PACKAGE_DIR         - ${SRCROOT}/${PRODUCT_NAME} (or other)
+#     SPM_BUILD_DIR           - ${SPM_PACKAGE_DIR}/.build
+#     SPM_MODULE_BUILD_SUFFIX - .build - suffix of built submodules!
+#     SPM_CONFIG              - absolute location of Package.swift
+#     SWIFT_SYSTEM_DIR        - include for UIKit and such
+#     SPM_USE_BITCODE         - yes/no
+#
+# Platform and Images
+#
+#     SPM_PLATFORM_NAME       - e.g. macosx (vs macOS in PLATFORM_NAME :-/)
+#     IMAGE_LOCATION_PREFIX   - e.g. /usr/local
+#     IMAGE_ABI_RELDIR        - e.g. lib/swift4.0/macosx-x86_64
+#     IMAGE_ABI_DIR           - e.g. /usr/local/lib/swift4.0/macosx-x86_64
+#
+# Stuff we produce
+#
+#     SA_LIBRARY_NAME         - name of cached archive
+#                                 (libXcodeSPMDependencies.a)
+#
+ARGS="$@"
+#set -ve
+#set -e
+
+verbose=${verbose:=yes}
+
+if [[ "x${SRCROOT}" = "x" ]]; then
+  BUILD_IN_XCODE=no
+  if [[ -d "$PWD/Sources" ]]; then
+    SRCROOT="$PWD" # CAREFUL - Different Meaning!!!
+  else
+    echo "Not running as part of Xcode or within a package?!"
+    exit 1
+  fi
+else
+  BUILD_IN_XCODE=yes
+fi
+
+
+# ********* Default Values when running outside of Xcode *********
+
+if [[ "x$CONFIGURATION" = "x" ]]; then
+  CONFIGURATION=Debug
+fi
+
+if [[ "x${PRODUCT_NAME}" = "x" ]]; then
+  PRODUCT_NAME="$(basename $PWD)"
+fi
+
+if [[ "x${TOOLCHAIN_DIR}" = "x" ]]; then
+  TOOLCHAIN_DIR="${DT_TOOLCHAIN_DIR}"
+fi
+
+if [[ "x${TOOLCHAIN_DIR}" = "x" ]]; then
+  # a little whacky
+  SWIFT_DRIVER=$(xcrun --toolchain swift-latest -f swift)
+  TOOLCHAIN_DIR=$(echo ${SWIFT_DRIVER} | sed s#/usr/bin/swift##)
+else
+  # use PATH lookup as set by Xcode
+  SWIFT_DRIVER=swift
+fi
+
+if [[ "x${DT_TOOLCHAIN_DIR}" = "x" ]]; then
+  DT_TOOLCHAIN_DIR="${TOOLCHAIN_DIR}"
+fi
+
+
+# ********** Swift version **********
+
+SWIFT_VERSION="$(${SWIFT_DRIVER} --version | head -1 | sed 's/^.*[Vv]ersion[\t ]*\([.[:digit:]]*\).*$/\1/g')"
+declare -a SWIFT_VERSION_LIST="(${SWIFT_VERSION//./ })"
+SWIFT_MAJOR=${SWIFT_VERSION_LIST[0]}
+SWIFT_MINOR=${SWIFT_VERSION_LIST[1]}
+SWIFT_SUBMINOR_OPT=${SWIFT_VERSION_LIST[2]}
+SWIFT_SUBMINOR=${SWIFT_SUBMINOR_OPT}
+if [[ "x${SWIFT_SUBMINOR}" = "x" ]]; then SWIFT_SUBMINOR=0; fi
+  
+if [[ ${SWIFT_MAJOR} -ge 5 ]]; then
+  SWIFT_ABI_RELDIR="swift${SWIFT_MAJOR}.${SWIFT_MINOR}"
+else
+  # FIXME: ABI is still incompatible between 4.0.2 and 4.0.3 etc
+  SWIFT_ABI_RELDIR="swift${SWIFT_MAJOR}.${SWIFT_MINOR}"
+fi
+  
+
+# ********** OS Environment **********
+
+PLATFORM_NAME="${PLATFORM_NAME:-$(sw_vers -productName | sed "s/ //g" | tr '[:upper:]' '[:lower:]')}"
+PLATFORM_PREFERRED_ARCH="${PLATFORM_PREFERRED_ARCH:-${UNAME_M:-$(uname -m)}}"
+CURRENT_ARCH="${CURRENT_ARCH:-${PLATFORM_PREFERRED_ARCH}}"
+SPM_PLATFORM_NAME="${SPM_PLATFORM_NAME:-${PLATFORM_NAME}}"
+DEPLOYMENT_TARGET_SETTING_NAME="${DEPLOYMENT_TARGET_SETTING_NAME:-MACOSX_DEPLOYMENT_TARGET}"
+
+if [[ "x${DEPLOYMENT_TARGET_SETTING_NAME}" = "xMACOSX_DEPLOYMENT_TARGET" ]]; then
+  if [[ "x${MACOSX_DEPLOYMENT_TARGET}" = "x" ]]; then
+    MACOS_VERSION="$(sw_vers -productVersion)"
+    declare -a MACOS_VERSION_LIST="(${MACOS_VERSION//./ })"
+    MACOSX_DEPLOYMENT_TARGET="${MACOS_VERSION_LIST[0]}.${MACOS_VERSION_LIST[1]}"
+  fi
+fi
+
+if [[ "x${SWIFT_PLATFORM_TARGET_PREFIX}" = "x" ]]; then
+  if [[ "x${PLATFORM_NAME}" = "xiphoneos" ]]; then
+    SWIFT_PLATFORM_TARGET_PREFIX=ios
+  else
+    SWIFT_PLATFORM_TARGET_PREFIX="${PLATFORM_NAME}"
+  fi
+fi
+
+# TODO: only include -apple- on apple, but doesn't matter right now
+TARGET="${CURRENT_ARCH}-apple-${SWIFT_PLATFORM_TARGET_PREFIX}${!DEPLOYMENT_TARGET_SETTING_NAME}"
+if [[ "x${SWIFT_PLATFORM_TARGET_PREFIX}" = "xmacosx" ]]; then
+  SPM_USE_BITCODE=no
+else
+  SPM_USE_BITCODE=yes
+fi
+
+# ********** Swift System Dir *******
+
+if [[ "x${TOOLCHAIN_DIR}" != "x" ]]; then
+  SWIFT_SYSTEM_DIR="${TOOLCHAIN_DIR}/usr/lib/swift/${PLATFORM_NAME}/${PLATFORM_PREFERRED_ARCH}"
+fi
+
+
+# ********** SPM Environment **********
+
+SPM_BUILD_CONFIG="$(echo ${CONFIGURATION} | tr '[:upper:]' '[:lower:]')"
+SPM_BUILD_RELDIR=".build"
+SPM_MODULE_BUILD_SUFFIX=".build"
+if [[ "x${BUILD_IN_XCODE}" = "xyes" ]]; then
+  SPM_PACKAGE_SOURCE_DIR="${SRCROOT}/${PRODUCT_NAME}"
+  
+  # TODO:
+  # I'd prefer to use ${CONFIGURATION_TEMP_DIR} here, but unfortunately we
+  # can't refer to it from SHARED_SETTINGS directly (not an absolute path
+  # within Xcode).
+  # I think it is possible using header-maps or such, but lets keep going ;-)
+  #
+  # This actually *builds* fine, but Xcode itself can't find the stuff
+  # if [[ "x${CONFIGURATION_TEMP_DIR}" = "x" ]]; then
+  #   SPM_PACKAGE_DIR="${SRCROOT}/${PRODUCT_NAME}"
+  # else
+  #   SPM_PACKAGE_DIR="${CONFIGURATION_TEMP_DIR}"
+  # fi
+  SPM_PACKAGE_DIR="${SRCROOT}/${PRODUCT_NAME}/.buildzz"
+else
+  SPM_PACKAGE_SOURCE_DIR="${SRCROOT}"
+  SPM_PACKAGE_DIR="${SPM_PACKAGE_SOURCE_DIR}"
+fi
+SPM_BUILD_DIR="${SPM_PACKAGE_DIR}/${SPM_BUILD_RELDIR}"
+
+if [[ "x${BUILD_DIR}" = "x" ]]; then # outside Xcode
+  BUILD_DIR="${SPM_BUILD_DIR}"
+fi
+
+if [[ ${SWIFT_MAJOR} -ge 4 ]]; then
+  if [[ -f "${SPM_PACKAGE_SOURCE_DIR}/Package@swift-4.swift" ]]; then
+    SPM_CONFIG="${SPM_PACKAGE_SOURCE_DIR}/Package@swift-4.swift"
+  else
+    SPM_CONFIG="${SPM_PACKAGE_SOURCE_DIR}/Package.swift"
+  fi
+else
+  SPM_CONFIG="${SPM_PACKAGE_SOURCE_DIR}/Package.swift"
+fi
+
+
+# ********** Derive more Xcode settings ********
+
+if [[ "x${CONFIGURATION_BUILD_DIR}" = "x" ]]; then
+  CONFIGURATION_BUILD_DIR="${SPM_BUILD_DIR}/${SPM_BUILD_CONFIG}"
+fi
+if [[ "x${CONFIGURATION_TEMP_DIR}" = "x" ]]; then
+  CONFIGURATION_TEMP_DIR="${CONFIGURATION_BUILD_DIR}"
+fi
+
+
+# ********** Xcode helper setup **********
+
+SA_LIBRARY_NAME="${SA_LIBRARY_NAME:=libXcodeSPMDependencies.a}"
+
+# TODO: SA_LIBRARY_PATH
+# - where do we want to put it?
+
+
+# ********** Images **********************
+
+# TODO: allow lookups? IMAGE_LOCATION_PATH?
+IMAGE_LOCATION_PREFIX=/usr/local
+
+# FIXME: this breaks on iphoneos!
+IMAGE_ABI_RELDIR="lib/${SWIFT_ABI_RELDIR}/${TARGET}"
+IMAGE_ABI_DIR="${IMAGE_ABI_DIR:-${IMAGE_LOCATION_PREFIX}/${IMAGE_ABI_RELDIR}}"
+
+
+
+# ********** Log Environment *************
+
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Environment:"
+  echo "  Xcode:         ${BUILD_IN_XCODE}"
+  echo "  Configuration: ${CONFIGURATION} / ${SPM_BUILD_CONFIG}"
+  echo "  Product:       ${PRODUCT_NAME}"
+  echo "  Toolchain:     ${DT_TOOLCHAIN_DIR}"
+  echo "  Driver:        ${SWIFT_DRIVER}"
+  echo "  Swift Version: ${SWIFT_MAJOR}.${SWIFT_MINOR}.${SWIFT_SUBMINOR}"
+  echo "  Xcode .build:  ${BUILD_DIR}"
+  echo "  Xcode tmpdir:  ${CONFIGURATION_TEMP_DIR}"
+  echo "  System Inc:    ${SWIFT_SYSTEM_DIR}"
+  echo "SPM:"
+  echo "  Source dir:    ${SPM_PACKAGE_SOURCE_DIR}"
+  echo "  Package dir:   ${SPM_PACKAGE_DIR}"
+  echo "  Manifest:      ${SPM_CONFIG}"
+  echo "  SPM   .build:  ${SPM_BUILD_DIR}"
+  echo "Platform/ABI:"
+  echo "  Platform:      ${SPM_PLATFORM_NAME} ${CURRENT_ARCH} ${PLATFORM_NAME}"
+  echo "  Target:        ${TARGET} bitcode=${SPM_USE_BITCODE}"
+  echo "  ABI:           ${SWIFT_ABI_RELDIR}"
+  echo "  Images:        ${IMAGE_ABI_DIR}"
+  echo "Product:"
+  echo "  Archive:       ${SA_LIBRARY_NAME}"
+fi
