@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Kind</key>
+    <string>Xcode.Xcode3.ProjectTemplateUnitKind</string>
+  
+    <key>Identifier</key>
+    <string>de.zeezide.dt.unit.spm.modules.Moya</string>
+
+    <key>Concrete</key>
+    <false/>
+
+    <key>Options</key>
+    <array>
+      <dict>
+        <key>Identifier</key>   <string>zzSPMMoya</string>
+        <key>Name</key>
+        <string>Use the Moya module.</string>
+        <key>Description</key>
+        <string>Network abstraction layer written in Swift.</string>
+        
+        <key>SortOrder</key>    <integer>25</integer>
+        <key>Type</key>         <string>checkbox</string>
+        <key>Default</key>      <string>false</string>
+        <key>NotPersisted</key> <true/>
+        <key>Units</key>
+        <dict>
+          <key>true</key>
+          <array>
+            <dict>
+              <key>Nodes</key>
+              <array>
+                <string>Package.swift:spmpackagedecl:deps:Moya(url: "https://github.com/Moya/Moya.git", .upToNextMajor(from: "11.0.0"\))</string>
+                <string>Package.swift:spmpackagedecl:targets:default:ReactiveMoya</string>
+              </array>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>
