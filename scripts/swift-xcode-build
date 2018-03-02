@@ -402,8 +402,13 @@ spmBuild() {
                            ${INC_OPT}
     rc=$?
   fi
+  
   TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
   if [ $rc -ne 0 ]; then exit $rc; fi
+  
+  # Otherwise we get rebuilds if the user just edited package.swift w/o a new
+  # Resolution file.
+  touch "${SPM_PACKAGE_RESOLVED}"
   
   # PATCH LOCATION, MOVE STUFF  
   # FIXME: check whether it is a link
