@@ -335,9 +335,11 @@ fi
 
 # ********** Fetch/Resolve **********************
 
-if hash swift-progress 2>/dev/null; then
-  SWIFT_PROGRESS=swift-progress
-  SPM_SKIP_FETCH=yes # combine the two things
+if [[ -z ${HOMEBREW_CC+x} ]]; then
+  if hash swift-progress 2>/dev/null; then
+    SWIFT_PROGRESS=swift-progress
+    SPM_SKIP_FETCH=yes # combine the two things
+  fi
 fi
 
 spmFetch() {
