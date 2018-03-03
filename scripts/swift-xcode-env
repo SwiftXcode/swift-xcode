@@ -44,6 +44,7 @@
 #     IMAGE_LOCATION_PREFIX   - e.g. /usr/local
 #     IMAGE_ABI_RELDIR        - e.g. lib/swift4.0/macosx-x86_64
 #     IMAGE_ABI_DIR           - e.g. /usr/local/lib/swift4.0/macosx-x86_64
+#     BUILDING_IN_HOMEBREW    - yes/no
 #
 # Stuff we produce
 #
@@ -66,6 +67,12 @@ if [[ "x${SRCROOT}" = "x" ]]; then
   fi
 else
   BUILD_IN_XCODE=yes
+fi
+
+if [[ -z ${HOMEBREW_CC+x} ]]; then # not in Homebrew
+  BUILDING_IN_HOMEBREW=no
+else
+  BUILDING_IN_HOMEBREW=yes
 fi
 
 

@@ -26,7 +26,7 @@
 ARGS="$@"
 #set -ve
 #set -e
-verbose=yes
+verbose=${verbose:=yes}
 
 # usage
 
@@ -337,23 +337,29 @@ fi
 
 SWIFT_PROGRESS_TOOL=${SWIFT_PROGRESS_TOOL:=swift-progress}
 
-if [[ -z ${HOMEBREW_CC+x} ]]; then # not in Homebrew
+if [[ "x${BUILDING_IN_HOMEBREW}" = "xyes" ]]; then
+  # We are already running in a sandbox. Running the SPM sandbox in the
+  # Brew sandbox doesn't work.
+  HOMEBREW_SPM_FLAGS=--disable-sandbox
+else
   if hash ${SWIFT_PROGRESS_TOOL} 2>/dev/null; then
     SWIFT_PROGRESS="${SWIFT_PROGRESS_TOOL}"
-    SPM_SKIP_FETCH=yes # combine the two things
+    SPM_SKIP_FETCH=yes # combine the two things in on call to avoid flicker
   fi
-else # in Homebrew, we are not allowed to fetch!
-  SPM_SKIP_FETCH=yes
 fi
 
 spmFetch() {
   TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
   echo "Fetch package dependencies .. ($(echo $((`date +%s` - SCRIPT_START_TS))))"
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
-    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package --package-path "${SPM_PACKAGE_DIR}" resolve
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package \
+      ${HOMEBREW_SPM_FLAGS} \
+      --package-path "${SPM_PACKAGE_DIR}" resolve
     rc=$?
   else
-    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package --chdir "${SPM_PACKAGE_DIR}" fetch
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} package \
+      ${HOMEBREW_SPM_FLAGS} \
+      --chdir "${SPM_PACKAGE_DIR}" fetch
     rc=$?
   fi
   TIME_ELAPSED=$((`date +%s` - SCRIPT_START_TS))
@@ -394,18 +400,22 @@ spmBuild() {
   cd "${SPM_PACKAGE_DIR}"
   
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
-    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build --configuration ${SPM_BUILD_CONFIG} \
-                          --package-path "${SPM_PACKAGE_DIR}" \
-                           -Xswiftc -target -Xswiftc ${TARGET} \
-                           ${SDK_OPT} ${BITCODE_OPT} \
-                           ${INC_OPT}
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
+      ${HOMEBREW_SPM_FLAGS} \
+      --configuration ${SPM_BUILD_CONFIG} \
+      --package-path "${SPM_PACKAGE_DIR}" \
+      -Xswiftc -target -Xswiftc ${TARGET} \
+      ${SDK_OPT} ${BITCODE_OPT} \
+      ${INC_OPT}
     rc=$?
   else
-    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build --configuration ${SPM_BUILD_CONFIG} \
-                          --chdir "${SPM_PACKAGE_DIR}"        \
-                           -Xswiftc -target -Xswiftc ${TARGET} \
-                           ${SDK_OPT} ${BITCODE_OPT} \
-                           ${INC_OPT}
+    ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
+      ${HOMEBREW_SPM_FLAGS} \
+      --configuration ${SPM_BUILD_CONFIG} \
+      --chdir "${SPM_PACKAGE_DIR}"        \
+      -Xswiftc -target -Xswiftc ${TARGET} \
+      ${SDK_OPT} ${BITCODE_OPT} \
+      ${INC_OPT}
     rc=$?
   fi
   
