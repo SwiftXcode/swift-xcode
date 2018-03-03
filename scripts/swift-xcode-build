@@ -431,6 +431,10 @@ spmBuild() {
   # PATCH LOCATION, MOVE STUFF  
   # FIXME: check whether it is a link
   # .buildzz/.build/ - x86_64-apple-macosx10.10/debug/
+  # FIXME: Because of this, we tend to rebuild everything because SPM can't
+  #        find the target it thinks it has.
+  #        The problem is: How to find out? We could really be mixing target
+  #        dirs (e.g. Simulator + Device).
   SPM_INCORRECT_BUILT_ARCH_DIR="${SPM_BUILD_RELDIR}/$(readlink ${SPM_BUILD_RELDIR}/${SPM_BUILD_CONFIG})"
   echo "BUILT-DIR: ${SPM_INCORRECT_BUILT_ARCH_DIR}"
   if [[ -d "${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
