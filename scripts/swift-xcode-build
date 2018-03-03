@@ -576,7 +576,6 @@ generateCombinedModuleMap() {
   
   OLD_PWD="${PWD}"
   cd "${PACKAGE_CHECKOUT_DIR}"
-  ls "${PACKAGE_CHECKOUT_DIR}" # TEST
   
   MODMAPS="$(ls */module.modulemap 2>/dev/null)"
   if [[ "x${MODMAPS}" != "x" ]]; then
