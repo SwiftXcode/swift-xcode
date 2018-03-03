@@ -59,7 +59,14 @@ echo
 #PACKAGE_TARBALL=$(SWIFT_BUILD_DIR)/$(PACKAGE_TARBALL_NAME)
 
 # We cut off `XcodeImage` if set
-SA_IMAGE=${SA_IMAGE:=$(basename $(pwd)|sed "s#_XcodeImage\$##g")}
+if [[ "x${SA_IMAGE}" = "x" ]]; then
+  if [[ "x${BUILDING_IN_HOMEBREW}" = "xyes" ]]; then
+    # TODO: Figure out the name in a better way. For now: pass in via SA_IMAGE
+    SA_IMAGE=$(basename $(pwd)|sed "s#_XcodeImage\$##g")
+  else
+    SA_IMAGE=$(basename $(pwd)|sed "s#_XcodeImage\$##g")
+  fi
+fi
 SA_IMAGE_FILE="${SA_IMAGE}.image"
 SA_IMAGE_PATH="${SPM_BUILD_RELDIR}/${SA_IMAGE_FILE}"
 
