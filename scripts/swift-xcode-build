@@ -68,10 +68,18 @@ SA_MODMAP_HEADER_DIR="${SA_CONFIG_BUILD_DIR}"
 SA_COMBINED_MODMAP="${SA_MODMAP_HEADER_DIR}/module.modulemap"
 SPM_PACKAGE_RESOLVED="${SPM_PACKAGE_DIR}/Package.resolved"
 
+# Those are again set below (FIXME)
+if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
+  PACKAGE_CHECKOUT_DIR="${SPM_BUILD_DIR}/checkouts"
+else
+  PACKAGE_CHECKOUT_DIR="${SPM_PACKAGE_DIR}/Packages"
+fi
+
 if [[ "x$verbose" = "xyes" ]]; then
   echo "Build setup:"
-  echo "  Build dir: ${SA_CONFIG_BUILD_DIR}"
-  echo "  Deplib:    ${SA_LIBRARY_PATH}"
+  echo "  Build dir:    ${SA_CONFIG_BUILD_DIR}"
+  echo "  Deplib:       ${SA_LIBRARY_PATH}"
+  echo "  Checkout dir: ${PACKAGE_CHECKOUT_DIR}"
 fi
 
 
@@ -271,6 +279,22 @@ unpackImage() {
         echo "got no release library: ${SA_LIBRARY_RELEASE_PATH}"
       fi
     fi
+    
+    cd "${SPM_PACKAGE_DIR}"
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo -n "Looking for image SPM module maps templates .."
+    fi
+    SPM_BUILD_MOD_MAP_TEMPLATES="$(ls */*/*${SPM_MODULE_BUILD_SUFFIX}/*.modulemap-sxi-template 2>/dev/null)"
+    if [[ "x${SPM_BUILD_MOD_MAP_TEMPLATES}" != "x" ]]; then
+      for MODMAP_IMAGE_TEMPLATE in ${SPM_BUILD_MOD_MAP_TEMPLATES}; do
+        MODMAP_NAME="${MODMAP_IMAGE_TEMPLATE%-sxi-template}"
+        sed < "${MODMAP_IMAGE_TEMPLATE}" > "${MODMAP_NAME}" "s#PACKAGE_CHECKOUT_DIR#${PACKAGE_CHECKOUT_DIR}##g"
+      done
+    fi
+    if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
+    
+    # restore
+    cd "${OLDDIR}"
   fi
 }
 
@@ -561,7 +585,7 @@ bundleInStaticLib() {
 bundleInStaticLib
 
 
-# ********** Module Map *************************
+# ********** Module Map for sys packages *************************
 
 # TODO: maybe rather create as a private module map like in ZeeQL!
 
@@ -602,3 +626,24 @@ generateCombinedModuleMap() {
 }
 
 generateCombinedModuleMap
+
+
+# ********** Module Map for builtin packages *****************
+
+generateImageModMapTemplates() {
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo -n "Imaging, looking for SPM module maps and create templates .."
+  fi
+  SPM_BUILD_MOD_MAPS="$(ls ${SPM_TARGET_BUILT_CONFIG_DIR}/*${SPM_MODULE_BUILD_SUFFIX}/*.modulemap 2>/dev/null)"
+  if [[ "x${SPM_BUILD_MOD_MAPS}" != "x" ]]; then
+    for i in ${SPM_BUILD_MOD_MAPS}; do
+      MODMAP_IMAGE_TEMPLATE="${i}-sxi-template"
+      sed < "$i" > "${MODMAP_IMAGE_TEMPLATE}" "s#${PACKAGE_CHECKOUT_DIR}#PACKAGE_CHECKOUT_DIR#g"
+    done
+  fi
+  if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
+}
+
+if [[ "x${SWIFT_XCODE_IMAGING}" = "xyes" ]]; then
+  generateImageModMapTemplates
+fi

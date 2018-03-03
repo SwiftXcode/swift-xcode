@@ -42,12 +42,12 @@ rc=$?; if [ $rc -ne 0 ]; then exit $rc; fi
 # ********** Build Debug/Release ****************
 
 echo "Building and bundling debug library ..."
-CONFIGURATION=Debug "${SCRIPT_DIR}/swift-xcode-build"
+SWIFT_XCODE_IMAGING=yes CONFIGURATION=Debug "${SCRIPT_DIR}/swift-xcode-build"
 echo "---"
 echo
 
 echo "Building and bundling release library ..."
-CONFIGURATION=Release "${SCRIPT_DIR}/swift-xcode-build"
+SWIFT_XCODE_IMAGING=yes CONFIGURATION=Release "${SCRIPT_DIR}/swift-xcode-build"
 echo "---"
 echo
 
