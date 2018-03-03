@@ -80,7 +80,7 @@ linkFromBrew() {
   echo "Linking templates in ${XCODE_TEMPLATE_SOURCE_DIR}:"
   OLDPWD="$PWD"
   cd "${XCODE_TEMPLATE_SOURCE_DIR}"
-  for reldir in $(find . -name "*.xctemplate" -type d | sed s#^./##g); do
+  for reldir in $(find -L . -name "*.xctemplate" -type d | sed s#^./##g); do
     targetdir="${XCODE_TEMPLATE_INSTALL_DIR}/${reldir}"
     sourcedir="${XCODE_TEMPLATE_SOURCE_DIR}/${reldir}"
     basedir="$(dirname ${XCODE_TEMPLATE_INSTALL_DIR}/${reldir})"
