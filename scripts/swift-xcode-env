@@ -35,6 +35,7 @@
 #     SPM_BUILD_DIR           - ${SPM_PACKAGE_DIR}/.build
 #     SPM_MODULE_BUILD_SUFFIX - .build - suffix of built submodules!
 #     SPM_CONFIG              - absolute location of Package.swift
+#     SPM_BINPATH_TARGET      - x86_64-apple-macosx10.10
 #     SWIFT_SYSTEM_DIR        - include for UIKit and such
 #     SPM_USE_BITCODE         - yes/no
 #
@@ -166,6 +167,7 @@ fi
 SPM_BUILD_CONFIG="$(echo ${CONFIGURATION} | tr '[:upper:]' '[:lower:]')"
 SPM_BUILD_RELDIR=".build"
 SPM_MODULE_BUILD_SUFFIX=".build"
+SPM_BINPATH_TARGET=$(basename $(dirname $(swift build --show-bin-path)))
 if [[ "x${BUILD_IN_XCODE}" = "xyes" ]]; then
   SPM_PACKAGE_SOURCE_DIR="${SRCROOT}/${PRODUCT_NAME}"
   
