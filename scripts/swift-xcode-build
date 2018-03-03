@@ -335,11 +335,15 @@ fi
 
 # ********** Fetch/Resolve **********************
 
-if [[ -z ${HOMEBREW_CC+x} ]]; then
-  if hash swift-progress 2>/dev/null; then
-    SWIFT_PROGRESS=swift-progress
+SWIFT_PROGRESS_TOOL=${SWIFT_PROGRESS_TOOL:=swift-progress}
+
+if [[ -z ${HOMEBREW_CC+x} ]]; then # not in Homebrew
+  if hash ${SWIFT_PROGRESS_TOOL} 2>/dev/null; then
+    SWIFT_PROGRESS="${SWIFT_PROGRESS_TOOL}"
     SPM_SKIP_FETCH=yes # combine the two things
   fi
+else # in Homebrew, we are not allowed to fetch!
+  SPM_SKIP_FETCH=yes
 fi
 
 spmFetch() {
