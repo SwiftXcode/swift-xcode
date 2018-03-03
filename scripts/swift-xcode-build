@@ -280,18 +280,23 @@ unpackImage() {
       fi
     fi
     
-    cd "${SPM_PACKAGE_DIR}"
+    cd "${SPM_BUILD_DIR}"
     if [[ "x$verbose" = "xyes" ]]; then
       echo -n "Looking for image SPM module maps templates .."
     fi
     SPM_BUILD_MOD_MAP_TEMPLATES="$(ls */*/*${SPM_MODULE_BUILD_SUFFIX}/*.modulemap-sxi-template 2>/dev/null)"
     if [[ "x${SPM_BUILD_MOD_MAP_TEMPLATES}" != "x" ]]; then
+      echo ".. patching:"
       for MODMAP_IMAGE_TEMPLATE in ${SPM_BUILD_MOD_MAP_TEMPLATES}; do
         MODMAP_NAME="${MODMAP_IMAGE_TEMPLATE%-sxi-template}"
-        sed < "${MODMAP_IMAGE_TEMPLATE}" > "${MODMAP_NAME}" "s#PACKAGE_CHECKOUT_DIR#${PACKAGE_CHECKOUT_DIR}##g"
+        sed < "${MODMAP_IMAGE_TEMPLATE}" > "${MODMAP_NAME}" "s#PACKAGE_CHECKOUT_DIR#${PACKAGE_CHECKOUT_DIR}#g"
+        echo "  patch: ${MODMAP_IMAGE_TEMPLATE}"
+        #echo "    ${MODMAP_NAME}"
       done
+      if [[ "x$verbose" = "xyes" ]]; then echo "done."; fi
+    else
+      if [[ "x$verbose" = "xyes" ]]; then echo ".. none found."; fi
     fi
-    if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
     
     # restore
     cd "${OLDDIR}"
