@@ -17,9 +17,10 @@ usage() {
   echo "usage: swift xcode <subcommand>"
   echo
   echo "Available subcommands are:"
-  echo "   build     Build SPM package so that Xcode can consume it."
-  echo "   image     Build an image from an SPM Template package."
-  echo "   env       Print environment etc."
+  echo "   build           Build SPM package so that Xcode can consume it."
+  echo "   image           Build an image from an SPM Template package."
+  echo "   env             Print environment etc."
+  echo "   link-templates  Link Xcode templates in Homebrew to Xcode location."
   echo
   echo "Try 'swift xcode <subcommand> help' for details."
 }
