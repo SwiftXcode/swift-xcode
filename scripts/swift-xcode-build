@@ -85,15 +85,17 @@ if [[ ! -d "${SPM_PACKAGE_DIR}" ]]; then
 fi
 
 
-# Link Package.swift into build-dir
+# Copy Package.swift into our own build-dir
   
 if [[ -f "${SPM_CONFIG}" ]]; then
-  if [[ "x$verbose" = "xyes" ]]; then
-    echo "Copying Package.swift"
-    echo "  from: ${SPM_CONFIG}"
-    echo "  to:   ${SPM_PACKAGE_DIR}/Package.swift"
+  if [[ "x${SPM_CONFIG}" != "x${SPM_PACKAGE_DIR}/Package.swift" ]]; then
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo "Copying Package.swift"
+      echo "  from: ${SPM_CONFIG}"
+      echo "  to:   ${SPM_PACKAGE_DIR}/Package.swift"
+    fi
+    cp -a "${SPM_CONFIG}" "${SPM_PACKAGE_DIR}/Package.swift"
   fi
-  cp -a "${SPM_CONFIG}" "${SPM_PACKAGE_DIR}/Package.swift"
 else
   if [[ "x$verbose" = "xyes" ]]; then
     echo "Missing Package.swift?: ${SPM_CONFIG}"
