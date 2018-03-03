@@ -47,14 +47,13 @@ which is directly linked against the Xcode target.
 ### 3. Reduce *Initial* Compile Time
 
 State of the art:
-
 When you create a new Swift Package Manager project,
 for instance a Kitura endpoint,
 the initial setup takes a long time:
 1. all the required packages are resolved and fetched from the Internet
 2. all those packages are built from source
 
-For a plain Kitura HelloWorld this is about 3 minutes before you can get
+For a plain Kitura HelloWorld this is about 3-5 minutes before you can get
 going, even on a fast machine.
 
 But worse: This has to be done every single time you create a new project!
@@ -63,7 +62,7 @@ Want to create HelloKitten? Another 3mins lost. HelloCow? Again.
 Goals, alongside goal 1:
 1. Create a project from within Xcode. (Cmd-Shift-N, follow wizard)
 2. Edit your main.swift or whatever
-3. Build and run. Only build your project sources.
+3. Build and run. Only build your own project sources.
 
 #### 3.1. Bonus: Do not require Internet to create new projects
 
