@@ -20,8 +20,8 @@
 #     SPM_PACKAGE_RESOLVED
 #     SPM_SKIP_FETCH
 #     SPM_PKG_DUMMY_DIR
-#     SPM_TARGET_BUILT_DIR
-#     SPM_TARGET_BUILT_CONFIG_DIR
+#     SPM_TARGET_BUILT_DIR        - .build/arm64-apple-ios7.0
+#     SPM_TARGET_BUILT_CONFIG_DIR - .build/arm64-apple-ios7.0/debug
 #
 ARGS="$@"
 #set -ve
@@ -400,6 +400,24 @@ spmBuild() {
   echo "Building dependencies (${SPM_BUILD_CONFIG}) ... (${TIME_ELAPSED}s)"
   OLD_PWD="${PWD}"
   cd "${SPM_PACKAGE_DIR}"
+
+  #     SPM_TARGET_BUILT_DIR        - .build/arm64-apple-ios7.0
+  #     SPM_TARGET_BUILT_CONFIG_DIR - .build/arm64-apple-ios7.0/debug
+  # SPM_BINPATH_TARGET x86_64-apple-macosx10.10
+  
+  SPM_BINPATH_BUILD_DIR="${SPM_BUILD_RELDIR}/${SPM_BINPATH_TARGET}/${SPM_BUILD_CONFIG}"
+  if [[ "x${SPM_BINPATH_BUILD_DIR}" != "x${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
+    if [[ ! -e "${SPM_BINPATH_BUILD_DIR}" ]]; then
+      if [[ -d "${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
+        if [[ "x$verbose" = "xyes" ]]; then
+          echo "  Moving old build results:"
+          echo "    from: ${SPM_TARGET_BUILT_CONFIG_DIR}"
+          echo "    to:   ${SPM_BINPATH_BUILD_DIR}"
+        fi
+        mv "${SPM_TARGET_BUILT_CONFIG_DIR}" "${SPM_BINPATH_BUILD_DIR}"
+      fi
+    fi
+  fi
   
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
@@ -436,12 +454,19 @@ spmBuild() {
   #        The problem is: How to find out? We could really be mixing target
   #        dirs (e.g. Simulator + Device).
   SPM_INCORRECT_BUILT_ARCH_DIR="${SPM_BUILD_RELDIR}/$(readlink ${SPM_BUILD_RELDIR}/${SPM_BUILD_CONFIG})"
-  echo "BUILT-DIR: ${SPM_INCORRECT_BUILT_ARCH_DIR}"
-  if [[ -d "${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
-    rm -rf "${SPM_TARGET_BUILT_CONFIG_DIR}"
+  if [[ "x${SPM_INCORRECT_BUILT_ARCH_DIR}" != "x${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
+    #      ^^ only if not the same
+    if [[ "x$verbose" = "xyes" ]]; then
+      echo "  Moving build results:"
+      echo "    from: ${SPM_INCORRECT_BUILT_ARCH_DIR}"
+      echo "    to:   ${SPM_TARGET_BUILT_DIR}"
+    fi
+    if [[ -d "${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
+      rm -rf "${SPM_TARGET_BUILT_CONFIG_DIR}"
+    fi
+    mkdir -p "${SPM_TARGET_BUILT_DIR}"
+    mv "${SPM_INCORRECT_BUILT_ARCH_DIR}" "${SPM_TARGET_BUILT_CONFIG_DIR}"
   fi
-  mkdir -p "${SPM_TARGET_BUILT_DIR}"
-  mv "${SPM_INCORRECT_BUILT_ARCH_DIR}" "${SPM_TARGET_BUILT_CONFIG_DIR}"
   
   cd "${OLD_PWD}"
   echo "Done building package (for dependencies). (${TIME_ELAPSED}s)"
