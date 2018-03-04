@@ -50,6 +50,8 @@ fi
 SCRIPT_START_TS=$(date +%s)
 SCRIPT_DIR=$(dirname "$0")
 
+SA_CC="${SCRIPT_DIR}/swift-xcode-cc"
+SA_CLANG=${SA_CLANG:=$(xcrun --find clang)}
 
 # ********** Load common stuff ******************
 
@@ -410,18 +412,26 @@ SPM_TARGET_BUILT_CONFIG_DIR="${SPM_TARGET_BUILT_DIR}/${SPM_BUILD_CONFIG}"
 
 spmBuild() {
   if [[ "x${SDK_DIR}" = "x" ]]; then
-    SDK_OPT=
+    SWIFT_SDK_OPT=
     # This has been replaced by the -isysroot below.
     # TBD: Can we drop this here? Probably.
-    INC_OPT="-Xswiftc -I -Xswiftc "${SWIFT_SYSTEM_DIR}""
+    SWIFT_INC_OPT="-Xswiftc -I -Xswiftc \"${SWIFT_SYSTEM_DIR}\""
   else
-    SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR} -Xcc -isysroot -Xcc ${SDK_DIR}"
+    SWIFT_SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR}"
   fi
+  
+  SWIFT_TARGET_OPT="-Xswiftc -target -Xswiftc ${TARGET}"
+  
+  TARGET_OPT="${SWIFT_TARGET_OPT} ${SWIFT_TARGET_OPT//Xswiftc/Xcc} -Xcc -Wno-unused-command-line-argument"
+  #SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR} -Xcc --sysroot -Xcc ${SDK_DIR}"
+  SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR}"
+  SDK_OPT=${SWIFT_SDK_OPT} ${SWIFT_SDK_OPT/Xswiftc/Xcc}
+  INC_OPT=${SWIFT_INC_OPT}
   
   # seems to work for simulator too, but macOS?
   # required for device build
   if [[ "x${SPM_USE_BITCODE}" = "xyes" ]]; then
-    BITCODE_OPT="-Xswiftc -embed-bitcode"
+    BITCODE_OPT="-Xswiftc -embed-bitcode -Xcc -fembed-bitcode"
   fi
   
   
@@ -429,10 +439,6 @@ spmBuild() {
   echo "Building dependencies (${SPM_BUILD_CONFIG}) ... (${TIME_ELAPSED}s)"
   OLD_PWD="${PWD}"
   cd "${SPM_PACKAGE_DIR}"
-
-  #     SPM_TARGET_BUILT_DIR        - .build/arm64-apple-ios7.0
-  #     SPM_TARGET_BUILT_CONFIG_DIR - .build/arm64-apple-ios7.0/debug
-  # SPM_BINPATH_TARGET x86_64-apple-macosx10.10
   
   SPM_BINPATH_BUILD_DIR="${SPM_BUILD_RELDIR}/${SPM_BINPATH_TARGET}/${SPM_BUILD_CONFIG}"
   if [[ "x${SPM_BINPATH_BUILD_DIR}" != "x${SPM_TARGET_BUILT_CONFIG_DIR}" ]]; then
@@ -448,23 +454,22 @@ spmBuild() {
     fi
   fi
   
+  export SA_CLANG
+  export CC="${SA_CC}"
+  
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
       ${HOMEBREW_SPM_FLAGS} \
       --configuration ${SPM_BUILD_CONFIG} \
       --package-path "${SPM_PACKAGE_DIR}" \
-      -Xswiftc -target -Xswiftc ${TARGET} \
-      ${SDK_OPT} ${BITCODE_OPT} \
-      ${INC_OPT}
+      ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   else
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
       ${HOMEBREW_SPM_FLAGS} \
       --configuration ${SPM_BUILD_CONFIG} \
       --chdir "${SPM_PACKAGE_DIR}"        \
-      -Xswiftc -target -Xswiftc ${TARGET} \
-      ${SDK_OPT} ${BITCODE_OPT} \
-      ${INC_OPT}
+      ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   fi
   

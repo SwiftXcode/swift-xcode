@@ -38,6 +38,7 @@
         <key>ProductType</key>
         <string>com.apple.product-type.application</string>
         
+        <!-- TODO: move those to the parent project, that works -->
         <!-- Note: CONFIGURATION is really lower, but on icase FS it doesn't matter ... -->
         <key>SharedSettings</key>
         <dict>

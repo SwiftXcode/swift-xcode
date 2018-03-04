@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
+#
+# swift-xcode -- A collection of SwiftPM extension to deal with building
+#                Xcode projects.
+#
+
+#set -ve
+#set -e
+#verbose=${verbose:=no}
+verbose=no # do not inherit from swift-xcode-build
+dryrun=${dryrun:=no}
+
+CLANG=${SA_CLANG:=$(xcrun --find clang)}
+
+# just once, the front args
+didHaveTarget=no
+didHaveArch=no
+didHaveSysRoot=no
+
+args=("$@")
+for (( i = 0; i < "${#args[@]}"; ++i )); do
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "Args[$i] = ${args[i]}"
+  fi
+  case ${args[i]} in
+    -target)
+      if [[ $didHaveTarget = "no" ]]; then
+        unset args[i]; unset args[i+1]
+        didHaveTarget="yes"
+      fi
+      ;;
+    -arch)
+      if [[ $didHaveArch = "no" ]]; then
+        unset args[i]; unset args[i+1]
+        didHaveArch="yes"
+      fi
+      ;;
+    --sysroot)
+      if [[ $didHaveSysRoot = "no" ]]; then
+        unset args[i]; unset args[i+1]
+        didHaveSysRoot="yes"
+      fi
+      ;;
+    #-isysroot) unset args[i]; unset args[i+1];;
+    -F)        unset args[i]; unset args[i+1];; # replace all frameworks
+    -mmacosx-version-min=*) unset args[i];;
+  esac
+done
+
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Patched args: ${args[@]}"
+fi
+
+if [[ "x$dryrun" != "xyes" ]]; then
+  ${CLANG} "${args[@]}"
+fi

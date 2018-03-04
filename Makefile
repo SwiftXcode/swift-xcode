@@ -1,7 +1,7 @@
 # Makefile
 # Copyright 2017-2018 ZeeZide GmbH. All rights reserved.
 
--include config.make
+include makefiles/swift-xcode-config.make
 
 PROJECT_APP_TEMPLATES_DIR = templates/Project\ Templates/Application
 PROJECT_BASE_TEMPLATES_DIR = templates/Project\ Templates/Base
@@ -137,3 +137,12 @@ install-xcconfig:
 
 uninstall-xcconfig:
 	$(UNINSTALL) $(XCCONFIG_INSTALL_DIR)/swift-xcode.xcconfig
+
+# makefiles
+
+install-makefiles:
+	$(MKDIR_P) $(SWIFT_XCODE_MAKEFILE_DIR)
+	$(INSTALL) makefiles/swift-xcode-*.make $(SWIFT_XCODE_MAKEFILE_DIR)
+
+uninstall-makefiles:
+	$(UNINSTALL) $(SWIFT_XCODE_MAKEFILE_DIR)/swift-xcode-*.make
