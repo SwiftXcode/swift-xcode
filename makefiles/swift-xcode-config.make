@@ -44,6 +44,10 @@ ifeq ($(UNAME_S),Darwin)
     XCCONFIG_INSTALL_DIR=$(prefix)/lib/xcconfig
   endif
 
+  ifeq ($(SWIFT_XCODE_MAKEFILE_DIR),)
+    SWIFT_XCODE_MAKEFILE_DIR=$(prefix)/lib/swift-xcode/makefiles
+  endif
+
   ifeq ($(XCODE_TEMPLATE_SOURCE_DIR),)
     XCODE_TEMPLATE_SOURCE_DIR=$(prefix)/lib/xcode/templates
   endif
@@ -51,10 +55,19 @@ ifeq ($(UNAME_S),Darwin)
     XCODE_TEMPLATE_INSTALL_DIR=$(HOME)/Library/Developer/Xcode/Templates
   endif
   
-  XCODE_TEMPLATE_PROJECT_APP_SOURCE_DIR     = $(prefix)/lib/xcode/templates/Project\ Templates/Application
-  XCODE_TEMPLATE_PROJECT_BASE_SOURCE_DIR    = $(prefix)/lib/xcode/templates/Project\ Templates/Base
-  XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR = $(prefix)/lib/xcode/templates/Project\ Templates/SPM\ Modules
-  XCODE_TEMPLATE_FILE_OTHER_SOURCE_DIR      = $(prefix)/lib/xcode/templates/File\ Templates/Other
+  XCODE_TEMPLATE_PROJECT_APP_SOURCE_DIR      = $(prefix)/lib/xcode/templates/Project\ Templates/Application
+  XCODE_TEMPLATE_PROJECT_BASE_SOURCE_DIR     = $(prefix)/lib/xcode/templates/Project\ Templates/Base
+  XCODE_TEMPLATE_PROJECT_SERVER_SOURCE_DIR   = $(prefix)/lib/xcode/templates/Project\ Templates/Server
+  XCODE_TEMPLATE_PROJECT_MODULES_SOURCE_DIR  = $(prefix)/lib/xcode/templates/Project\ Templates/SPM\ Modules
+  XCODE_TEMPLATE_FILE_OTHER_SOURCE_DIR       = $(prefix)/lib/xcode/templates/File\ Templates/Other
+  XCODE_TEMPLATE_FILE_SERVER_SOURCE_DIR      = $(prefix)/lib/xcode/templates/File\ Templates/Server
+  
+  XCODE_TEMPLATE_PROJECT_APP_INSTALL_DIR     = $(XCODE_TEMPLATE_INSTALL_DIR)/Project\ Templates/Application
+  XCODE_TEMPLATE_PROJECT_BASE_INSTALL_DIR    = $(XCODE_TEMPLATE_INSTALL_DIR)/Project\ Templates/Base
+  XCODE_TEMPLATE_PROJECT_SERVER_INSTALL_DIR  = $(XCODE_TEMPLATE_INSTALL_DIR)/Project\ Templates/Server
+  XCODE_TEMPLATE_PROJECT_MODULES_INSTALL_DIR = $(XCODE_TEMPLATE_INSTALL_DIR)/Project\ Templates/SPM\ Modules
+  XCODE_TEMPLATE_FILE_OTHER_INSTALL_DIR      = $(XCODE_TEMPLATE_INSTALL_DIR)/File\ Templates/Other
+  XCODE_TEMPLATE_FILE_SERVER_INSTALL_DIR     = $(XCODE_TEMPLATE_INSTALL_DIR)/File\ Templates/Server
   
   XCODE_DIR=/Applications/Xcode.app
   XCODE_PLATFORMS_RELDIR=Contents/Developer/Platforms
