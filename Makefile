@@ -9,6 +9,7 @@ PROJECT_MODULES_TEMPLATES_DIR = templates/Project\ Templates/SPM\ Modules
 FILE_OTHER_TEMPLATES_DIR  = templates/File\ Templates/Other
 
 SCRIPTS = $(wildcard scripts/swift-xcode*)
+SWIFT_XCODE_MAKEFILES = $(wildcard makefiles/swift-xcode*.make)
 
 all :
 
@@ -17,14 +18,21 @@ clean :
 distclean : clean
 
 
-install : all install-templates install-xcconfig
+install : all install-scripts install-templates install-xcconfig install-makefiles
+
+uninstall : uninstall-templates uninstall-xcconfig uninstall-makefiles uninstall-scripts
+	
+lint : lint-templates
+
+
+# scripts
+
+install-scripts:
 	$(MKDIR_P) $(BINARY_INSTALL_DIR)
 	$(INSTALL) $(SCRIPTS) $(BINARY_INSTALL_DIR)/
 
-uninstall : uninstall-templates uninstall-xcconfig
+uninstall-scripts:
 	$(UNINSTALL) $(addprefix $(BINARY_INSTALL_DIR)/,$(notdir $(SCRIPTS)))
-	
-lint : lint-templates
 
 
 # templates
@@ -142,7 +150,7 @@ uninstall-xcconfig:
 
 install-makefiles:
 	$(MKDIR_P) $(SWIFT_XCODE_MAKEFILE_DIR)
-	$(INSTALL) makefiles/swift-xcode-*.make $(SWIFT_XCODE_MAKEFILE_DIR)
+	$(INSTALL) $(SWIFT_XCODE_MAKEFILES) $(SWIFT_XCODE_MAKEFILE_DIR)/
 
 uninstall-makefiles:
-	$(UNINSTALL) $(SWIFT_XCODE_MAKEFILE_DIR)/swift-xcode-*.make
+	$(UNINSTALL) $(addprefix $(SWIFT_XCODE_MAKEFILE_DIR)/,$(notdir $(SWIFT_XCODE_MAKEFILES)))
