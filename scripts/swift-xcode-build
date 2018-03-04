@@ -420,7 +420,7 @@ spmBuild() {
       exit 10
     else
       SWIFT_INC_OPT="-Xcc -I -Xcc ${SWIFT_SYSTEM_DIR}"
-      echo "SWIFT_SYSTEM_DIR: ${SWIFT_INC_OPT}"
+      #echo "SWIFT_SYSTEM_DIR: ${SWIFT_INC_OPT}"
     fi
   else
     SWIFT_SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR}"
