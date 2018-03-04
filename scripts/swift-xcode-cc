@@ -8,10 +8,11 @@
 
 #set -ve
 #set -e
-verbose=${verbose:=no}
+#verbose=${verbose:=no}
+verbose=no # do not inherit from swift-xcode-build
 dryrun=${dryrun:=no}
 
-CLANG=$(xcrun --find clang)
+CLANG=${SA_CLANG:=$(xcrun --find clang)}
 
 # just once, the front args
 didHaveTarget=no
