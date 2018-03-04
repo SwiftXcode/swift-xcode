@@ -415,18 +415,24 @@ spmBuild() {
     SWIFT_SDK_OPT=
     # This has been replaced by the -isysroot below.
     # TBD: Can we drop this here? Probably.
-    SWIFT_INC_OPT="-Xswiftc -I -Xswiftc \"${SWIFT_SYSTEM_DIR}\""
+    if [[ "x${SWIFT_SYSTEM_DIR}" = "x" ]]; then
+      echo "SWIFT_SYSTEM_DIR is not set?"
+      exit 10
+    else
+      SWIFT_INC_OPT="-Xcc -I -Xcc ${SWIFT_SYSTEM_DIR}"
+      echo "SWIFT_SYSTEM_DIR: ${SWIFT_INC_OPT}"
+    fi
   else
     SWIFT_SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR}"
+    #SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR} -Xcc --sysroot -Xcc ${SDK_DIR}"
+    SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR}"
   fi
   
   SWIFT_TARGET_OPT="-Xswiftc -target -Xswiftc ${TARGET}"
   
   TARGET_OPT="${SWIFT_TARGET_OPT} ${SWIFT_TARGET_OPT//Xswiftc/Xcc} -Xcc -Wno-unused-command-line-argument"
-  #SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR} -Xcc --sysroot -Xcc ${SDK_DIR}"
-  SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR}"
-  SDK_OPT=${SWIFT_SDK_OPT} ${SWIFT_SDK_OPT/Xswiftc/Xcc}
-  INC_OPT=${SWIFT_INC_OPT}
+  SDK_OPT="${SWIFT_SDK_OPT} ${SWIFT_SDK_OPT/Xswiftc/Xcc}"
+  INC_OPT="${SWIFT_INC_OPT}"
   
   # seems to work for simulator too, but macOS?
   # required for device build
@@ -460,15 +466,15 @@ spmBuild() {
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
       ${HOMEBREW_SPM_FLAGS} \
-      --configuration ${SPM_BUILD_CONFIG} \
-      --package-path "${SPM_PACKAGE_DIR}" \
+        --configuration ${SPM_BUILD_CONFIG} \
+        --package-path "${SPM_PACKAGE_DIR}" \
       ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   else
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
       ${HOMEBREW_SPM_FLAGS} \
-      --configuration ${SPM_BUILD_CONFIG} \
-      --chdir "${SPM_PACKAGE_DIR}"        \
+        --configuration ${SPM_BUILD_CONFIG} \
+        --chdir "${SPM_PACKAGE_DIR}"        \
       ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   fi
