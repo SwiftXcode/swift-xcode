@@ -83,6 +83,7 @@ tar --disable-copyfile \
 	  --exclude "ModuleCache"	\
 	  --exclude "*.o"		      \
 	  --exclude "*.d"		      \
+    --exclude "*_XcodeImage.*" \
 	  -f "${SA_IMAGE_PATH}"   \
     \
     "${SPM_BUILD_RELDIR}"   \

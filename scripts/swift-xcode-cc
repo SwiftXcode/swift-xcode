@@ -20,6 +20,11 @@ didHaveArch=no
 didHaveSysRoot=no
 
 args=("$@")
+
+if [[ "x$verbose" = "xyes" ]]; then
+  echo "Original args: ${args[@]}"
+fi
+
 for (( i = 0; i < "${#args[@]}"; ++i )); do
   if [[ "x$verbose" = "xyes" ]]; then
     echo "Args[$i] = ${args[i]}"
@@ -44,8 +49,12 @@ for (( i = 0; i < "${#args[@]}"; ++i )); do
       fi
       ;;
     #-isysroot) unset args[i]; unset args[i+1];;
-    -F)        unset args[i]; unset args[i+1];; # replace all frameworks
-    -mmacosx-version-min=*) unset args[i];;
+    -F) # replace all frameworks
+      unset args[i]; unset args[i+1]
+      ;;
+    -mmacosx-version-min=*) 
+      unset args[i]
+      ;;
   esac
 done
 
