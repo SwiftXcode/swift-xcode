@@ -426,13 +426,16 @@ spmBuild() {
     SWIFT_SDK_OPT="-Xswiftc -sdk -Xswiftc ${SDK_DIR}"
     #SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR} -Xcc --sysroot -Xcc ${SDK_DIR}"
     SYSROOT_OPT="-Xcc -isysroot -Xcc ${SDK_DIR}"
+    if [[ "x${SWIFT_SYSTEM_DIR}" != "x" ]]; then
+      SWIFT_INC_OPT="-Xcc -I -Xcc ${SWIFT_SYSTEM_DIR}"
+    fi
   fi
   
   SWIFT_TARGET_OPT="-Xswiftc -target -Xswiftc ${TARGET}"
   
   TARGET_OPT="${SWIFT_TARGET_OPT} ${SWIFT_TARGET_OPT//Xswiftc/Xcc} -Xcc -Wno-unused-command-line-argument"
-  SDK_OPT="${SWIFT_SDK_OPT} ${SWIFT_SDK_OPT/Xswiftc/Xcc}"
   INC_OPT="${SWIFT_INC_OPT}"
+  SDK_OPT="${SWIFT_SDK_OPT}"
   
   # seems to work for simulator too, but macOS?
   # required for device build
