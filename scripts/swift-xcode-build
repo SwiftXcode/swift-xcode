@@ -467,10 +467,11 @@ spmBuild() {
   export CC="${SA_CC}"
   
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
+    # gives issues w/ spaces: --package-path "${SPM_PACKAGE_DIR}",
+    # and we are within the dir anyways.
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
       ${HOMEBREW_SPM_FLAGS} \
         --configuration ${SPM_BUILD_CONFIG} \
-        --package-path "${SPM_PACKAGE_DIR}" \
       ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   else
@@ -563,19 +564,21 @@ bundleInStaticLib() {
   
   # Note: the -q allows for dupes! (which is what we want here)
   #       the -S skips symbol table creation (done by ranlib after the fact)
-  SPM_DEPENDENCIES="$(ls -d ${SPM_TARGET_BUILT_CONFIG_DIR}/*${SPM_MODULE_BUILD_SUFFIX})"
+  IFS=$'\n'
+  SPM_DEPENDENCIES=$(ls -d "${SPM_TARGET_BUILT_CONFIG_DIR}/"*"${SPM_MODULE_BUILD_SUFFIX}")
   for DEP in ${SPM_DEPENDENCIES}; do
-    DEP_BASENAME="$(basename ${DEP})"
+    DEP_BASENAME=$(basename "${DEP}")
     if [[ "${DEP_BASENAME}" = "${PRODUCT_NAME}${SPM_MODULE_BUILD_SUFFIX}" ]]; then
       if [[ "x$verbose" = "xyes" ]]; then
         echo "  Do not archive own module: ${PRODUCT_NAME}"
       fi
     else
-      echo -n "  Archiving dependency: `basename ${DEP} | sed s#.build##g` .."
+      DEP_BASENAME_WO_BUILD="${DEP_BASENAME//.build//}"
+      echo -n "  Archiving dependency: ${DEP_BASENAME_WO_BUILD} .."
       ar -c -q -S "${SA_LIBRARY_PATH}" $(find "${DEP}" -name *.o)
       rc=$?
       if [[ $rc -ne 0 ]]; then 
-        echo "Archiving failed"
+        echo >&2 "Archiving failed"
         exit $rc
       fi
       echo ".. OK."
@@ -584,10 +587,11 @@ bundleInStaticLib() {
   
   if [[ ! -f "${SA_LIBRARY_PATH}" ]]; then
     echo -n "  Archiving dummy:"
-    ar -c -q -S "${SA_LIBRARY_PATH}" "${SPM_TARGET_BUILT_CONFIG_DIR}/${PRODUCT_NAME}${SPM_MODULE_BUILD_SUFFIX}/dummy.swift.o"
+    ar -c -q -S "${SA_LIBRARY_PATH}" \
+      "${SPM_TARGET_BUILT_CONFIG_DIR}/${PRODUCT_NAME}${SPM_MODULE_BUILD_SUFFIX}/dummy.swift.o"
     rc=$?
     if [[ $rc -ne 0 ]]; then 
-      echo "Archiving failed"
+      echo >&2 "Archiving failed"
       exit $rc
     fi
     echo ".. OK."
@@ -615,17 +619,18 @@ generateCombinedModuleMap() {
   
   PACKAGE_CHECKOUT_DIR_NAME=$(basename "${PACKAGE_CHECKOUT_DIR}")
   
-  rm -f ${SA_COMBINED_MODMAP}
+  rm -f "${SA_COMBINED_MODMAP}"
   
   OLD_PWD="${PWD}"
   cd "${PACKAGE_CHECKOUT_DIR}"
   
-  MODMAPS="$(ls */module.modulemap 2>/dev/null)"
+  MODMAPS=$(ls */module.modulemap 2>/dev/null)
   if [[ "x${MODMAPS}" != "x" ]]; then
     for i in */module.modulemap; do 
       cat $i >> "${SA_COMBINED_MODMAP}"
     
-      for j in $(ls $(dirname $i)/*.h 2>/dev/null); do
+      IDIRNAME=$(dirname "$i")
+      for j in $(ls ${IDIRNAME}/*.h 2>/dev/null); do
         if [[ "x$verbose" = "xyes" ]]; then
           echo "  link module map header: $j"
         fi
