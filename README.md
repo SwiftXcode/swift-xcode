@@ -200,12 +200,6 @@ In some cases it can be. In other cases it can't :-)
 - [Swift Package Manager](https://swift.org/package-manager/)
 - Ray Wenderlich: [An Introduction to the Swift Package Manager](https://www.raywenderlich.com/148832/introduction-swift-package-manager)
 
-### What it looks like ...
-
-Build a Mobile Cows application in 3 minutes:
-
-<img src="http://zeezide.com/img/swift-xcode-uikit-cows.gif" />
-
 ### Who
 
 Brought to you by
