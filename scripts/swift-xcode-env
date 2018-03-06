@@ -167,7 +167,12 @@ fi
 SPM_BUILD_CONFIG="$(echo ${CONFIGURATION} | tr '[:upper:]' '[:lower:]')"
 SPM_BUILD_RELDIR=".build"
 SPM_MODULE_BUILD_SUFFIX=".build"
-SPM_BINPATH_TARGET=$(basename $(dirname $(swift build --show-bin-path)))
+
+# Mobile Cows/Mobile Cows/.build/x86_64-apple-macosx10.10/debug
+SPM_BINPATH=$(swift build --show-bin-path) 
+
+SPM_BINPATH_PARENT=$(dirname "${SPM_BINPATH}")
+SPM_BINPATH_TARGET=$(basename "${SPM_BINPATH_PARENT}")
 if [[ "x${BUILD_IN_XCODE}" = "xyes" ]]; then
   SPM_PACKAGE_SOURCE_DIR="${SRCROOT}/${PRODUCT_NAME}"
   
