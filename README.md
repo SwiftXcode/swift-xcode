@@ -15,6 +15,7 @@ Do not require an Internet connection just to create a new project.
 
 <p style="text-align: right;"><i>... hopefully getting sherlocked soon!</i></p>
 
+Too much text? Want a GIF? [Here you go](https://swiftxcode.github.io#what-it-looks-like-).
 
 ## Goals
 
@@ -199,7 +200,6 @@ In some cases it can be. In other cases it can't :-)
   this is originally inspired by [CWL SPM Fetch](https://www.cocoawithlove.com/blog/package-manager-fetch.html)
 - [Swift Package Manager](https://swift.org/package-manager/)
 - Ray Wenderlich: [An Introduction to the Swift Package Manager](https://www.raywenderlich.com/148832/introduction-swift-package-manager)
-
 
 ### Who
 
