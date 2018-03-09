@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "___PACKAGENAMEASIDENTIFIER___",
+    name: "___PACKAGENAME___",
     dependencies: [
         /* Add your dependencies in here
         .package(url: "https://github.com/AlwaysRightInstitute/cows.git",
@@ -13,7 +13,7 @@ let package = Package(
     ],
     targets: [
         // "." is because we do not have the sources in Sources,
-        .target(name: "___PACKAGENAMEASIDENTIFIER___", 
+        .target(name: "___PACKAGENAME___", 
                 dependencies: [ 
                     //"cows" 
                 ],

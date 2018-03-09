@@ -63,8 +63,8 @@
     
     <key>Nodes</key>
     <array>
-      <string>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:comments</string>
-      <string>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:imports:import:Foundation</string>
+      <string>Sources/___PACKAGENAME___/main.swift:comments</string>
+      <string>Sources/___PACKAGENAME___/main.swift:imports:import:Foundation</string>
 
       <string>Package.swift:header</string>
       <string>Package.swift:spmpackagedecl</string>
@@ -98,7 +98,7 @@ import PackageDescription
       <dict>
         <key>Beginning</key>
         <string>let package = Package(
-    name: "___PACKAGENAMEASIDENTIFIER___",
+    name: "___PACKAGENAME___",
 </string>
         <key>End</key>
         <string>)</string>
@@ -126,12 +126,12 @@ import PackageDescription
       <key>*:spmpackagedecl:targets:default</key>
       <dict>
         <key>Beginning</key>
-        <string>        .target(name: "___PACKAGENAMEASIDENTIFIER___", 
+        <string>        .target(name: "___PACKAGENAME___", 
                 dependencies: [
                   /* Add your target dependencies in here, e.g.: */
                   // "cows",</string>
         <key>End</key>
-        <string>        ])</string>
+        <string>                ])</string>
       </dict>
                 
       <key>Package.swift:spmpackagedecl:deps:*</key>
@@ -142,12 +142,12 @@ import PackageDescription
       
       <!-- Tool stuff -->
       
-      <key>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift</key>
+      <key>Sources/___PACKAGENAME___/main.swift</key>
       <dict>
         <key>Path</key><string>Sources/main.swift</string>
       </dict>      
       
-      <key>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:body:helloworld</key>
+      <key>Sources/___PACKAGENAME___/main.swift:body:helloworld</key>
       <string>print("Hello Swifty World!")</string>
     </dict>
   </dict>
