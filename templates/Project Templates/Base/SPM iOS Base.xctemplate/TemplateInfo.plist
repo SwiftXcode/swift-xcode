@@ -48,7 +48,7 @@ import PackageDescription
   		<dict>
   			<key>Beginning</key>
   			<string>let package = Package(
-    name: "___PACKAGENAMEASIDENTIFIER___",
+    name: "___PACKAGENAME___",
 </string>
   			<key>End</key>
 	  		<string>)</string>
@@ -79,7 +79,7 @@ import PackageDescription
   		<dict>
   			<key>Beginning</key>
   			<string>        // "." is because we do not have the sources in Sources,
-        .target(name: "___PACKAGENAMEASIDENTIFIER___", 
+        .target(name: "___PACKAGENAME___", 
                 dependencies: [
                   /* Add your target dependencies in here, e.g.: */
                   // "cows",</string>

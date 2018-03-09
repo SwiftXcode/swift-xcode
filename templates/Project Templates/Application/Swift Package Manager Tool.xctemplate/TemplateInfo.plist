@@ -51,7 +51,7 @@
     
     <key>Nodes</key>
     <array>
-      <string>Sources/___PACKAGENAMEASIDENTIFIER___/main.swift:body:helloworld</string>
+      <string>Sources/___PACKAGENAME___/main.swift:body:helloworld</string>
     </array>    
   </dict>
 </plist>
