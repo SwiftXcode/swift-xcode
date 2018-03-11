@@ -575,13 +575,18 @@ bundleInStaticLib() {
     else
       DEP_BASENAME_WO_BUILD="${DEP_BASENAME//.build//}"
       echo -n "  Archiving dependency: ${DEP_BASENAME_WO_BUILD} .."
-      ar -c -q -S "${SA_LIBRARY_PATH}" $(find "${DEP}" -name *.o)
-      rc=$?
-      if [[ $rc -ne 0 ]]; then 
-        echo >&2 "Archiving failed"
-        exit $rc
+      DEP_OFILES=$(find "${DEP}" -name *.o)
+      if [[ "x${DEP_OFILES}" = "x" ]]; then
+        echo ".. no .o to archive."
+      else
+        ar -c -q -S "${SA_LIBRARY_PATH}" ${DEP_OFILES}
+        rc=$?
+        if [[ $rc -ne 0 ]]; then 
+          echo >&2 "Archiving failed"
+          exit $rc
+        fi
+        echo ".. OK."
       fi
-      echo ".. OK."
     fi
   done
   
