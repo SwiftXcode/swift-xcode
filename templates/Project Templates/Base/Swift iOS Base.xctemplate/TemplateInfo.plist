@@ -201,17 +201,24 @@ super.didReceiveMemoryWarning()
       <string><![CDATA[<key>UILaunchStoryboardName</key><string>LaunchScreen</string>]]></string>
       <key>Assets.xcassets</key>
       <dict>
-            <key>Path</key>
-            <string>Images.xcassets</string>
-            <key>SortOrder</key>
-            <integer>100</integer>
+        <key>Path</key>     <string>Images.xcassets</string>
+        <key>SortOrder</key><integer>100</integer>
+        <key>AssetGeneration</key>
+        <array>
+          <dict>
+            <key>Type</key><string>appicon</string>
+            <key>Name</key><string>AppIcon</string>
+            <key>Platforms</key>
+            <dict><key>iOS</key><string>true</string></dict>
+          </dict>
+        </array>
       </dict>
       <key>Base.lproj/LaunchScreen.storyboard</key>
       <dict>
-            <key>Path</key>
-            <string>LaunchScreen.storyboard</string>
-            <key>SortOrder</key>
-            <integer>101</integer>
+        <key>Path</key>
+        <string>LaunchScreen.storyboard</string>
+        <key>SortOrder</key>
+        <integer>101</integer>
       </dict>
       
       <key>*:implementation:methods:applicationWillResignActive:comments</key>
