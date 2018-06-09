@@ -125,6 +125,15 @@ fi
 
 # ********** OS Environment **********
 
+if [[ "x${CURRENT_ARCH}" = "xundefined_arch" ]]; then
+  ORIGINAL_CURRENT_ARCH="${CURRENT_ARCH}"
+  unset CURRENT_ARCH
+fi
+if [[ "x${arch}" = "xundefined_arch" ]]; then
+  ORIGINAL_arch="${arch}"
+  unset arch
+fi
+
 PLATFORM_NAME="${PLATFORM_NAME:-$(sw_vers -productName | sed "s/ //g" | tr '[:upper:]' '[:lower:]')}"
 PLATFORM_PREFERRED_ARCH="${PLATFORM_PREFERRED_ARCH:-${UNAME_M:-$(uname -m)}}"
 CURRENT_ARCH="${CURRENT_ARCH:-${PLATFORM_PREFERRED_ARCH}}"

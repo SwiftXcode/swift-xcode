@@ -27,6 +27,7 @@ ARGS="$@"
 #set -ve
 #set -e
 verbose=${verbose:=yes}
+spm_verbose=${spm_verbose:=no}
 
 # usage
 
@@ -465,18 +466,37 @@ spmBuild() {
   
   export SA_CLANG
   export CC="${SA_CC}"
+
+  if [[ "x${spm_verbose}" = "xyes" ]]; then
+    SPM_VERBOSE_FLAGS="--verbose"
+  else
+    SPM_VERBOSE_FLAGS=""
+  fi
   
   if [[ "${SWIFT_MAJOR}" -ge 4 ]]; then
     # gives issues w/ spaces: --package-path "${SPM_PACKAGE_DIR}",
     # and we are within the dir anyways.
+    if [[ "x${spm_verbose}" = "xyes" ]]; then
+      echo "SPM:" ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
+        ${HOMEBREW_SPM_FLAGS} ${SPM_VERBOSE_FLAGS} \
+          --configuration ${SPM_BUILD_CONFIG} \
+        ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
+    fi
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
-      ${HOMEBREW_SPM_FLAGS} \
+      ${HOMEBREW_SPM_FLAGS} ${SPM_VERBOSE_FLAGS} \
         --configuration ${SPM_BUILD_CONFIG} \
       ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
     rc=$?
   else
+    if [[ "x${spm_verbose}" = "xyes" ]]; then
+      echo "SPM:" ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
+        ${HOMEBREW_SPM_FLAGS} ${SPM_VERBOSE_FLAGS} \
+          --configuration ${SPM_BUILD_CONFIG} \
+          --chdir "${SPM_PACKAGE_DIR}"        \
+        ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
+    fi
     ${SWIFT_PROGRESS} ${SWIFT_DRIVER} build \
-      ${HOMEBREW_SPM_FLAGS} \
+      ${HOMEBREW_SPM_FLAGS} ${SPM_VERBOSE_FLAGS} \
         --configuration ${SPM_BUILD_CONFIG} \
         --chdir "${SPM_PACKAGE_DIR}"        \
       ${TARGET_OPT} ${SDK_OPT} ${SYSROOT_OPT} ${BITCODE_OPT} ${INC_OPT}
