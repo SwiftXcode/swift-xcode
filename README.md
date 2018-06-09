@@ -17,6 +17,13 @@ Do not require an Internet connection just to create a new project.
 
 Too much text? Want a GIF? [Here you go](https://swiftxcode.github.io#what-it-looks-like-).
 
+- [Goals](#goals)
+- [Installation](#installation)
+  - [Extra Images](#extra-images)
+- [Using it for iOS Projects](#using-it-for-ios-projects)
+- [Comparison w/ other Package Managers](comparison-w-other-package-managers)
+- [FAQ](#faq)
+
 ## Goals
 
 ### 1. Use Swift Package Manager directly from within Xcode
@@ -91,7 +98,20 @@ Afterwards you can create new Xcode projects using those templates,
 without having to wait for the SPM bootstrap (fetch and compilation
 of the dependencies).
 
+#### Image: SwiftNIO
+
+Find it here:
+[SwiftXcode/SwiftNIO_XcodeImage](https://github.com/SwiftXcode/SwiftNIO_XcodeImage).
+
+```shell
+brew install swift-xcode-nio
+swift xcode link-templates # <-- important!
+```
+
 #### Image: Kitura
+
+Find it here:
+[SwiftXcode/Kitura_XcodeImage](https://github.com/SwiftXcode/Kitura_XcodeImage).
 
 (One time) compile time: ~5 minutes. Image size: ~100MB.
 Fresh project setup from create to run: 3 seconds.
@@ -101,6 +121,22 @@ brew install swift-xcode-kitura
 swift xcode link-templates # <-- important!
 ```
 
+#### Image: SwiftObjects
+
+Find it here:
+[SwiftObjects/SwiftObjects_XcodeImage](https://github.com/SwiftObjects/SwiftObjects_XcodeImage).
+
+```shell
+brew install swift-xcode-wo
+swift xcode link-templates # <-- important!
+```
+
+#### Image: RxSwift
+
+Find it here:
+[SwiftXcode/RxSwift_XcodeImage](https://github.com/SwiftXcode/RxSwift_XcodeImage).
+
+(not in Homebrew)
 
 ## Using it for iOS Projects
 
