@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:4.2
 //___FILEHEADER___
 
 import PackageDescription
