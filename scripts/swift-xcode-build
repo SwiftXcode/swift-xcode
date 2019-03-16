@@ -635,11 +635,19 @@ bundleInStaticLib
 
 # ********** Module Map for sys packages *************************
 
+# This is looking for module.modulemap files in the _checkout_ directory
+# (aka the sources), e.g.:
+#
+#   .build/checkouts/swift-nio-zlib-support.git-4216..1395956/module.modulemap
+#
+# And combines them into a single big module map file. This also links
+# header files (.h) into the target dir.
+#
 # TODO: maybe rather create as a private module map like in ZeeQL!
 
 generateCombinedModuleMap() {
   if [[ "x$verbose" = "xyes" ]]; then
-    echo -n "Creating combined module map, and linking headers .."
+    echo "Creating combined module map, and linking headers .."
   fi
   
   PACKAGE_CHECKOUT_DIR_NAME=$(basename "${PACKAGE_CHECKOUT_DIR}")
@@ -648,12 +656,21 @@ generateCombinedModuleMap() {
   
   OLD_PWD="${PWD}"
   cd "${PACKAGE_CHECKOUT_DIR}"
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "  checkout dir: ${PACKAGE_CHECKOUT_DIR}"
+    echo "  into:         ${SA_COMBINED_MODMAP}"
+    echo "  headers:      ${SA_MODMAP_HEADER_DIR}"
+  fi
   
+  # This only handles packages which have the module map at the root level.
   MODMAPS=$(ls */module.modulemap 2>/dev/null)
   if [[ "x${MODMAPS}" != "x" ]]; then
     for i in */module.modulemap; do 
-      cat $i >> "${SA_COMBINED_MODMAP}"
-    
+      cat "${i}" >> "${SA_COMBINED_MODMAP}"
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "  modmap: ${i}"
+      fi
+      
       IDIRNAME=$(dirname "$i")
       for j in $(ls ${IDIRNAME}/*.h 2>/dev/null); do
         if [[ "x$verbose" = "xyes" ]]; then
@@ -666,12 +683,45 @@ generateCombinedModuleMap() {
           ln -sf "../../../${PACKAGE_CHECKOUT_DIR_NAME}/${j}" . )
       done
     done
-    if [[ "x$verbose" = "xyes" ]]; then echo ".. done."; fi
+    if [[ "x$verbose" = "xyes" ]]; then echo "  .. done top-level."; fi
   else
-    if [[ "x$verbose" = "xyes" ]]; then echo ".. no maps found."; fi      
+    if [[ "x$verbose" = "xyes" ]]; then echo "  .. no top-level maps found."; fi      
+  fi
+  
+  # TODO: Process new style C modules, like:
+  # CRuntime.git--4432818398371797686/Sources/CRuntime/
+  # which has CRuntime.h and module.modulemap
+  MODMAPS=$(ls */Sources/*/module.modulemap 2>/dev/null)
+  if [[ "x${MODMAPS}" != "x" ]]; then
+    for i in */Sources/*/module.modulemap; do 
+      cat "${i}" >> "${SA_COMBINED_MODMAP}"
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "  modmap: ${i}"
+      fi
+      
+      # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime
+      IDIRNAME=$(dirname "$i")
+      for j in $(ls ${IDIRNAME}/*.h 2>/dev/null); do
+        # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime/CRuntime.h
+        if [[ "x$verbose" = "xyes" ]]; then
+          echo "  link module map header: $j"
+        fi
+        
+        # FIXME: this assumes a consistent hierarchy, but relative path
+        #        processing is hard in bash (w/o invoking perl ;-) )
+        ( cd "${SA_MODMAP_HEADER_DIR}";
+          ln -sf "../../../${PACKAGE_CHECKOUT_DIR_NAME}/${j}" . )
+      done
+    done
+    if [[ "x$verbose" = "xyes" ]]; then echo "  .. done nested."; fi
+  else
+    if [[ "x$verbose" = "xyes" ]]; then echo "  .. no nested maps found."; fi      
   fi
   
   cd "${OLD_PWD}"
+  if [[ "x$verbose" = "xyes" ]]; then
+    echo "done creating combined module map: ${SA_COMBINED_MODMAP}"
+  fi
 }
 
 generateCombinedModuleMap
