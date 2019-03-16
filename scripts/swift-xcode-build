@@ -712,6 +712,17 @@ generateCombinedModuleMap() {
         ( cd "${SA_MODMAP_HEADER_DIR}";
           ln -sf "../../../${PACKAGE_CHECKOUT_DIR_NAME}/${j}" . )
       done
+      for j in $(ls ${IDIRNAME}/include/*.h 2>/dev/null); do
+        # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime/CRuntime.h
+        if [[ "x$verbose" = "xyes" ]]; then
+          echo "  link module map header: $j"
+        fi
+        
+        # FIXME: this assumes a consistent hierarchy, but relative path
+        #        processing is hard in bash (w/o invoking perl ;-) )
+        ( cd "${SA_MODMAP_HEADER_DIR}";
+          ln -sf "../../../${PACKAGE_CHECKOUT_DIR_NAME}/${j}" . )
+      done
     done
     if [[ "x$verbose" = "xyes" ]]; then echo "  .. done nested."; fi
   else
