@@ -679,6 +679,14 @@ generateCombinedModuleMap
 
 # ********** Module Map for builtin packages *****************
 
+# This is looking for .modulemap files in the .build directories, e.g.:
+#
+#   .build/x86_64-apple-macosx10.14/debug/CNIOAtomics.build/module.modulemap
+#
+# Those module maps contain absolute pathes. Which means that when we build
+# _images_, we need to replace them after extraction. So what we do here
+# is that we replace the checkout-dir with "PACKAGE_CHECKOUT_DIR"
+
 generateImageModMapTemplates() {
   if [[ "x$verbose" = "xyes" ]]; then
     echo -n "Imaging, looking for SPM module maps and create templates .."
