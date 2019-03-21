@@ -694,9 +694,20 @@ generateCombinedModuleMap() {
   MODMAPS=$(ls */Sources/*/module.modulemap 2>/dev/null)
   if [[ "x${MODMAPS}" != "x" ]]; then
     for i in */Sources/*/module.modulemap; do 
+      LMODNAME=$(basename $(dirname ${i}))
+      if [[ "x${LMODNAME}" = "xCEpoll" ]]; then
+        if [[ "x$verbose" = "xyes" ]]; then
+          echo "  skipping Linux module: ${LMODNAME} ${i}"
+        fi
+        continue
+      fi
+      
+      if [[ "x$verbose" = "xyes" ]]; then
+        echo "  module: ${LMODNAME}"
+      fi      
       cat "${i}" >> "${SA_COMBINED_MODMAP}"
       if [[ "x$verbose" = "xyes" ]]; then
-        echo "  modmap: ${i}"
+        echo "    modmap: ${i}"
       fi
       
       # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime
@@ -704,7 +715,7 @@ generateCombinedModuleMap() {
       for j in $(ls ${IDIRNAME}/*.h 2>/dev/null); do
         # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime/CRuntime.h
         if [[ "x$verbose" = "xyes" ]]; then
-          echo "  link module map header: $j"
+          echo "    link module map header: $j"
         fi
         
         # FIXME: this assumes a consistent hierarchy, but relative path
@@ -715,7 +726,7 @@ generateCombinedModuleMap() {
       for j in $(ls ${IDIRNAME}/include/*.h 2>/dev/null); do
         # e.g. .../CRuntime.git--4432818398371797686/Sources/CRuntime/CRuntime.h
         if [[ "x$verbose" = "xyes" ]]; then
-          echo "  link module map header: $j"
+          echo "    link module map header: $j"
         fi
         
         # FIXME: this assumes a consistent hierarchy, but relative path
