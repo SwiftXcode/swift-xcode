@@ -4,8 +4,13 @@
 </h2>
 
 ![Swift4](https://img.shields.io/badge/swift-4-blue.svg)
+![Swift5](https://img.shields.io/badge/swift-5-blue.svg)
 ![macOS](https://img.shields.io/badge/os-macOS-green.svg?style=flat)
 [![homebrew](https://img.shields.io/homebrew/v/cake.svg)](https://github.com/SwiftXcode/homebrew-swiftxcode)
+
+**Breaking News from WWDC 2019**: 
+[Xcode 11](https://developer.apple.com/xcode/) 
+is finally supporting Swift Package Manager. Rendering this project obsolete.
 
 Use Swift packages directly from within Xcode,
 w/o having to jump to the Terminal.
@@ -13,7 +18,7 @@ With swift builds, in a non-annoying way.
 Build large dependencies once, not for every project.
 Do not require an Internet connection just to create a new project.
 
-<p style="text-align: right;"><i>... hopefully getting sherlocked soon!</i></p>
+<p style="text-align: right;"><i>... finally got sherlocked at WWDC 2019!</i></p>
 
 Too much text? Want a GIF? [Here you go](https://swiftxcode.github.io#what-it-looks-like-).
 
